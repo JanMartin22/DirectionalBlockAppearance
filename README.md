@@ -17,21 +17,6 @@ No resource pack, no client mod required.
 - Spigot or Paper **1.21+**
 - Java 21+
 
-## Current status
-
-- ✅ Two-sided blocks (front / back)
-- ✅ Works per player
-- ✅ Test command
-
-## Planned
-
-- [ ] Wand to create blocks in-game
-- [ ] Groups (manage many blocks together)
-- [ ] Saving (YAML, later MySQL)
-- [ ] Protection (breaking, pistons, explosions)
-- [ ] Six-sided mode (different block on every side)
-- [ ] Config & permissions
-
 ## Commands
 
 | Command | Description | Permission |
