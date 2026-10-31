@@ -4,6 +4,7 @@ import org.angler22.directionalblockappearance.manager.AppearanceManager;
 import org.angler22.directionalblockappearance.model.BlockKey;
 import org.angler22.directionalblockappearance.model.ViewBlock;
 import org.angler22.directionalblockappearance.model.ViewMode;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
@@ -66,6 +67,22 @@ public final class ViewService {
     public void resync(Player player) {
         sentViews.remove(player.getUniqueId());
         update(player);
+    }
+    public void restoreAll() {
+        for (Map.Entry<UUID, Map<BlockKey, BlockData>> entry : sentViews.entrySet()) {
+            Player player = Bukkit.getPlayer(entry.getKey());
+            if (player == null) {
+                continue;
+            }
+            for (BlockKey key : entry.getValue().keySet()) {
+                Location loc = key.toCenter();
+                if (loc == null) {
+                    continue;
+                }
+                player.sendBlockChange(loc, loc.getBlock().getBlockData());
+            }
+        }
+        sentViews.clear();
     }
 }
 

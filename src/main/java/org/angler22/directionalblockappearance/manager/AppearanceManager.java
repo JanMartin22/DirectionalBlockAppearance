@@ -10,10 +10,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class AppearanceManager {
     private final Map<String, ViewGroup> groups = new HashMap<>();
@@ -74,4 +71,17 @@ public List<ViewBlock> getNearby(Location loc, double r){
     }
     return list;
 }
+    public Collection<ViewGroup> getGroups() {
+        return Collections.unmodifiableCollection(groups.values());
+    }
+
+    public ViewBlock addBlock(ViewGroup group, BlockKey key) {
+        if (index.containsKey(key)) {
+            return null;
+        }
+        ViewBlock vb = new ViewBlock(key, group);
+        group.addBlock(vb);
+        index.put(key, vb);
+        return vb;
+    }
 }
