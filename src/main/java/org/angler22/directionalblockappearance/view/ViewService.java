@@ -55,5 +55,10 @@ public final class ViewService {
             playerViews.put(vb.getKey(), data);
         }
     }
+
+    public void clear(Player player) {
+        sentViews.remove(player.getUniqueId());
+    }
+
 }
 
