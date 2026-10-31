@@ -14,7 +14,7 @@ public final class DirectionalBlockAppearance extends JavaPlugin {
         AppearanceManager manager = new AppearanceManager();
         ViewService viewService = new ViewService(manager, 48);
 
-        getServer().getPluginManager().registerEvents(new ProtectionListener(manager, viewService), this);
+        getServer().getPluginManager().registerEvents(new ProtectionListener(manager, viewService, this), this);
 
         getServer().getPluginManager().registerEvents(new ViewListener(this, viewService), this);
 

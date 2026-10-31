@@ -63,6 +63,9 @@ public final class ViewService {
             playerViews.remove(key);
         }
     }
-
+    public void resync(Player player) {
+        sentViews.remove(player.getUniqueId());
+        update(player);
+    }
 }
 
