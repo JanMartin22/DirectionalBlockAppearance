@@ -1,0 +1,20 @@
+name: DirectionalBlockAppearance
+description: Make blocks look different depending on the side they're viewed from
+version: '${project.version}'
+
+main: org.angler22.directionalblockappearance.DirectionalBlockAppearance
+api-version: '1.21'
+
+authors: [ Angler22 ]
+
+commands:
+  dba:
+    description: Main command
+    usage: /<command> <subcommand>
+    aliases: [ directionalblockappearance ]
+    permission: dba.admin
+
+permissions:
+  dba.admin:
+    description: Access to all DBA commands
+    default: op
