@@ -7,6 +7,7 @@ import org.angler22.directionalblockappearance.manager.AppearanceManager;
 import org.angler22.directionalblockappearance.storage.Storage;
 import org.angler22.directionalblockappearance.storage.YamlStorage;
 import org.angler22.directionalblockappearance.view.ViewService;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -24,6 +25,8 @@ public final class DirectionalBlockAppearance extends JavaPlugin {
         viewService = new ViewService(manager, 48);
 
         getServer().getPluginManager().registerEvents(new ProtectionListener(manager, viewService, this), this);
+
+        Bukkit.getScheduler().runTaskTimer(this, () -> viewService.resyncAll(), 40L, 40L);
 
         getServer().getPluginManager().registerEvents(new ViewListener(this, viewService), this);
 

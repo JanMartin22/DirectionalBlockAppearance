@@ -84,5 +84,10 @@ public final class ViewService {
         }
         sentViews.clear();
     }
+    public void resyncAll() {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            resync(player);
+        }
+    }
 }
 
