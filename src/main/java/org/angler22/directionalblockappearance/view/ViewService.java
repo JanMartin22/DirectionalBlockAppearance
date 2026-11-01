@@ -92,5 +92,18 @@ public final class ViewService {
             resync(player);
         }
     }
+    public void restore(BlockKey key) {
+        Location loc = key.toCenter();
+        for (Map.Entry<UUID, Map<BlockKey, BlockData>> entry : sentViews.entrySet()) {
+            if (entry.getValue().remove(key) == null) {
+                continue;
+            }
+            Player player = Bukkit.getPlayer(entry.getKey());
+            if (player == null || loc == null) {
+                continue;
+            }
+            player.sendBlockChange(loc, loc.getBlock().getBlockData());
+        }
+    }
 }
 

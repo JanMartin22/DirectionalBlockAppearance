@@ -94,4 +94,16 @@ public List<ViewBlock> getNearby(Location loc, double r){
     public void markSaved() {
         changed = false;
     }
+
+    public ViewGroup deleteGroup(String name) {
+        ViewGroup group = groups.remove(name);
+        if (group == null) {
+            return null;
+        }
+        for (BlockKey key : group.getBlocks().keySet()) {
+            index.remove(key);
+        }
+        changed = true;
+        return group;
+    }
 }

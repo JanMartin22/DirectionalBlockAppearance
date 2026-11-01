@@ -1,6 +1,7 @@
 package org.angler22.directionalblockappearance.command;
 
 import org.angler22.directionalblockappearance.manager.AppearanceManager;
+import org.angler22.directionalblockappearance.model.BlockKey;
 import org.angler22.directionalblockappearance.model.ViewBlock;
 import org.angler22.directionalblockappearance.model.ViewGroup;
 import org.angler22.directionalblockappearance.model.ViewMode;
@@ -85,6 +86,39 @@ public class AppearanceCommand implements CommandExecutor {
             for(ViewGroup group: manager.getGroups()){
                 sender.sendMessage(group.getName() + " (" + group.getMode() + ", " + group.getBlocks().size() + " blocks)");
             }
+        } else if (args[1].equalsIgnoreCase("create")) {
+            handleCreate(sender, args);
+        } else if (args[1].equalsIgnoreCase("delete")) {
+            handleDelete(sender, args);
         }
     }
+    private void handleCreate(CommandSender sender, String[] args){
+        if(args.length < 3){
+            sender.sendMessage("Usage: /dba group create <name>");
+            return;
+        }
+        ViewGroup group = manager.createGroup(args[2], ViewMode.TWO_SIDED);
+        if(group == null){
+            sender.sendMessage("Group " + args[2] + " already exists");
+            return;
+        }
+        sender.sendMessage("Group " + args[2] + " created");
+    }
+
+    private void handleDelete(CommandSender sender, String[] args) {
+        if (args.length < 3) {
+            sender.sendMessage("Usage: /dba group delete <name>");
+            return;
+        }
+        ViewGroup group = manager.deleteGroup(args[2]);
+        if (group == null) {
+            sender.sendMessage("Group " + args[2] + " doesn't exist");
+            return;
+        }
+        for (BlockKey key : group.getBlocks().keySet()) {
+            viewService.restore(key);
+        }
+        sender.sendMessage("Group " + args[2] + " deleted (" + group.getBlocks().size() + " blocks)");
+    }
+
 }
