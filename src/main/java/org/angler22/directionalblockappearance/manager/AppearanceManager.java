@@ -4,7 +4,6 @@ import org.angler22.directionalblockappearance.model.BlockKey;
 import org.angler22.directionalblockappearance.model.ViewBlock;
 import org.angler22.directionalblockappearance.model.ViewGroup;
 import org.angler22.directionalblockappearance.model.ViewMode;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -15,6 +14,7 @@ import java.util.*;
 public class AppearanceManager {
     private final Map<String, ViewGroup> groups = new HashMap<>();
     private final Map<BlockKey, ViewBlock> index = new HashMap<>();
+    private boolean changed = false;
 
 public ViewGroup createGroup(String name, ViewMode mode, BlockData defaultBlock){
     if(groups.containsKey(name)){
@@ -22,6 +22,7 @@ public ViewGroup createGroup(String name, ViewMode mode, BlockData defaultBlock)
     } else {
        ViewGroup vg = new ViewGroup(name, mode, defaultBlock);
        groups.put(name, vg);
+       changed = true;
        return vg;
     }
 }
@@ -42,7 +43,7 @@ public ViewBlock addBlock(ViewGroup group, Block block, BlockFace face, BlockDat
     vb.setView(face, data);
     group.addBlock(vb);
     index.put(key, vb);
-
+    changed = true;
     return vb;
 }
 
@@ -51,6 +52,7 @@ public void removeBlock(BlockKey key){
     index.remove(key);
     if(vb != null){
         vb.getGroup().removeBlock(key);
+        changed = true;
     }
 }
 
@@ -82,6 +84,14 @@ public List<ViewBlock> getNearby(Location loc, double r){
         ViewBlock vb = new ViewBlock(key, group);
         group.addBlock(vb);
         index.put(key, vb);
+        changed = true;
         return vb;
+    }
+    public boolean hasChanged() {
+        return changed;
+    }
+
+    public void markSaved() {
+        changed = false;
     }
 }

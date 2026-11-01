@@ -22,6 +22,7 @@ public final class DirectionalBlockAppearance extends JavaPlugin {
         manager = new AppearanceManager();
         storage = new YamlStorage(new File(getDataFolder(), "groups.yml"), getLogger());
         storage.loadAll(manager);
+        manager.markSaved();
         viewService = new ViewService(manager, 48);
 
         getServer().getPluginManager().registerEvents(new ProtectionListener(manager, viewService, this), this);
@@ -29,6 +30,13 @@ public final class DirectionalBlockAppearance extends JavaPlugin {
         Bukkit.getScheduler().runTaskTimer(this, () -> viewService.resyncAll(), 40L, 40L);
 
         getServer().getPluginManager().registerEvents(new ViewListener(this, viewService), this);
+
+        Bukkit.getScheduler().runTaskTimer(this, () -> {
+            if (manager.hasChanged()) {
+                storage.saveAll(manager);
+                manager.markSaved();
+            }
+        }, 600L, 600L);
 
         getCommand("dba").setExecutor(new AppearanceCommand(manager, viewService));
 
