@@ -16,11 +16,11 @@ public class AppearanceManager {
     private final Map<BlockKey, ViewBlock> index = new HashMap<>();
     private boolean changed = false;
 
-public ViewGroup createGroup(String name, ViewMode mode, BlockData defaultBlock){
+public ViewGroup createGroup(String name, ViewMode mode){
     if(groups.containsKey(name)){
         return null;  // Gibt null zurück wenn der Name schon vergeben ist.
     } else {
-       ViewGroup vg = new ViewGroup(name, mode, defaultBlock);
+       ViewGroup vg = new ViewGroup(name, mode);
        groups.put(name, vg);
        changed = true;
        return vg;

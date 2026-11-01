@@ -1,5 +1,6 @@
 package org.angler22.directionalblockappearance.model;
 
+import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 
@@ -37,8 +38,20 @@ public class ViewBlock {
         views.remove(face);
     }
 
-    public BlockData getView(BlockFace face){
-        return views.getOrDefault(face, group.getDefaultBlock());
+    public BlockData getView(BlockFace face) {
+        BlockData view = views.get(face);
+        if (view == null) {
+            return getRealBlock();
+        }
+        return view;
+    }
+
+    public BlockData getRealBlock() {
+        Location center = key.toCenter();
+        if (center == null) {
+            return null;
+        }
+        return center.getBlock().getBlockData();
     }
 }
 

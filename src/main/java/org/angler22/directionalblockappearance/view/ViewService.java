@@ -43,6 +43,9 @@ public final class ViewService {
                 continue;
             }
             BlockData data = resolver.resolve(vb, eye);
+            if (data == null) {
+                continue;
+            }
 
             if (data.equals(playerViews.get(vb.getKey()))) {
                 continue;

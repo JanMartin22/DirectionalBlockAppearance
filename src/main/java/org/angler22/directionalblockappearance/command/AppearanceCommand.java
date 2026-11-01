@@ -15,7 +15,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.RayTraceResult;
 
 
-
 public class AppearanceCommand implements CommandExecutor {
 
     private final AppearanceManager manager;
@@ -28,35 +27,64 @@ public class AppearanceCommand implements CommandExecutor {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args){
-        if(!(sender instanceof Player player)){
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (args.length == 0) {
+            sender.sendMessage("Usage: /dba <test|group>");
+            return true;
+        }
+        if (args[0].equalsIgnoreCase("test")) {
+            handleTest(sender);
+        } else if (args[0].equalsIgnoreCase("group")) {
+            handleGroup(sender, args);
+        } else {
+            sender.sendMessage("Unknown subcommand");
+        }
+        return true;
+    }
+
+    private void handleTest(CommandSender sender) {
+
+        if (!(sender instanceof Player player)) {
             sender.sendMessage("This command is only for players");
-            return true;
+            return;
         }
-        if(args.length == 0 || !args[0].equalsIgnoreCase("test")){
-            sender.sendMessage("Usage: /dba test");
-            return true;
-        }
+
         RayTraceResult hit = player.rayTraceBlocks(5);
         if (hit == null || hit.getHitBlock() == null || hit.getHitBlockFace() == null) {
             player.sendMessage("Look at a block (max. 5 blocks away)");
-            return true;
+            return;
         }
         Block block = hit.getHitBlock();
         BlockFace face = hit.getHitBlockFace();
 
         ViewGroup group = manager.getGroup("test");
-        if(group == null){
-            group = manager.createGroup("test", ViewMode.TWO_SIDED, block.getBlockData());
+        if (group == null) {
+            group = manager.createGroup("test", ViewMode.TWO_SIDED);
         }
 
         ViewBlock vb = manager.addBlock(group, block, face, Material.GLASS.createBlockData());
         if (vb == null) {
             player.sendMessage("This block is already a DBA block");
-            return true;
+            return;
         }
         viewService.update(player);
         player.sendMessage("Test block created! Glass side: " + face);
-        return true;
+
+    }
+    private void handleGroup(CommandSender sender, String[] args) {
+        if (args.length < 2) {
+            sender.sendMessage("Usage: /dba group <create|delete|list>");
+            return;
+        }
+
+        if (args[1].equalsIgnoreCase("list")) {
+            if(manager.getGroups().isEmpty()){
+                sender.sendMessage("No groups");
+                return;
+            }
+            for(ViewGroup group: manager.getGroups()){
+                sender.sendMessage(group.getName() + " (" + group.getMode() + ", " + group.getBlocks().size() + " blocks)");
+            }
+        }
     }
 }

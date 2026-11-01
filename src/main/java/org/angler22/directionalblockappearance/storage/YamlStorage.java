@@ -34,7 +34,6 @@ public final class YamlStorage implements Storage {
             String path = "groups." + group.getName();
 
             yaml.set(path + ".mode", group.getMode().name());
-            yaml.set(path + ".default", group.getDefaultBlock().getAsString());
 
             List<Map<String, Object>> blockList = new ArrayList<>();
             for (ViewBlock vb : group.getBlocks().values()) {
@@ -80,8 +79,7 @@ public final class YamlStorage implements Storage {
             String path = "groups." + name;
             try {
                 ViewMode mode = ViewMode.valueOf(yaml.getString(path + ".mode"));
-                BlockData def = Bukkit.createBlockData(yaml.getString(path + ".default"));
-                ViewGroup group = manager.createGroup(name, mode, def);
+                ViewGroup group = manager.createGroup(name, mode);
                 if (group == null) {
                     continue;
                 }
@@ -107,7 +105,7 @@ public final class YamlStorage implements Storage {
                     }
                 }
             } catch (Exception e) {
-                logger.warning("Could not load group " + name + ": " + e.getMessage());   // ⑧
+                logger.warning("Could not load group " + name + ": " + e.getMessage());
             }
         }
     }
