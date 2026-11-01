@@ -17,11 +17,14 @@ No resource pack, no client mod required.
 - Spigot or Paper **1.21+**
 - Java 21+
 
+## Commands
+
 | Command | Description | Permission |
 |---|---|---|
 | `/dba group create <name>` | Creates a new group | `dba.admin` |
 | `/dba group delete <name>` | Deletes a group and all its blocks | `dba.admin` |
 | `/dba group list` | Lists all groups with their block count | `dba.admin` |
+| `/dba pos1` / `/dba pos2` | Sets a selection corner to the block you're looking at | `dba.admin` |
 | `/dba test` | Turns the block you're looking at into a test block (glass facing you) | `dba.admin` |
 
 ### Planned
@@ -32,8 +35,8 @@ No resource pack, no client mod required.
 | `/dba fill <group> <side> <block>` | Sets one side of all blocks in your selection |
 | `/dba remove` | Removes the DBA block you're looking at |
 | `/dba clear` | Removes all DBA blocks in your selection |
-| `/dba pos1` / `/dba pos2` | Sets selection corners (or use the wand: left/right click) |
-| `/dba wand` | Gives you the selection wand |
+| `/dba wand` | Gives you the selection wand (left click: pos1, right click: pos2) |
+
 ## License
 
 See [LICENSE](LICENSE).
