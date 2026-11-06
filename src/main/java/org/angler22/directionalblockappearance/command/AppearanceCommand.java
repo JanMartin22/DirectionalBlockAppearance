@@ -16,6 +16,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.util.RayTraceResult;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,8 +73,10 @@ public class AppearanceCommand implements CommandExecutor {
             sender.sendMessage("Usage: /dba group <create|delete|list>");
             return;
         }
-
         if (args[1].equalsIgnoreCase("list")) {
+            if (noPermission(sender, "dba.command.group.list")) {
+                return;
+            }
             if (manager.getGroups().isEmpty()) {
                 sender.sendMessage("No groups");
                 return;
@@ -88,7 +91,11 @@ public class AppearanceCommand implements CommandExecutor {
         }
     }
 
+
     private void handleCreate(CommandSender sender, String[] args) {
+        if (noPermission(sender, "dba.command.group.create")) {
+            return;
+        }
         if (args.length < 3) {
             sender.sendMessage("Usage: /dba group create <name>");
             return;
@@ -102,6 +109,9 @@ public class AppearanceCommand implements CommandExecutor {
     }
 
     private void handleDelete(CommandSender sender, String[] args) {
+        if (noPermission(sender, "dba.command.group.delete")) {
+            return;
+        }
         if (args.length < 3) {
             sender.sendMessage("Usage: /dba group delete <name>");
             return;
@@ -118,6 +128,9 @@ public class AppearanceCommand implements CommandExecutor {
     }
 
     private void handlePosition(CommandSender sender, String[] args) {
+        if (noPermission(sender, "dba.command.pos")) {
+            return;
+        }
         if (!(sender instanceof Player player)) {
             sender.sendMessage("This command is only for players");
             return;
@@ -140,6 +153,9 @@ public class AppearanceCommand implements CommandExecutor {
     }
 
     private void handleQuickset(CommandSender sender, String[] args) {
+        if (noPermission(sender, "dba.command.quickset")) {
+            return;
+        }
         if (!(sender instanceof Player player)) {
             sender.sendMessage("This command is only for players");
             return;
@@ -195,6 +211,9 @@ public class AppearanceCommand implements CommandExecutor {
     }
 
     private void handleSet(CommandSender sender, String[] args) {
+        if (noPermission(sender, "dba.command.set")) {
+            return;
+        }
         if (!(sender instanceof Player player)) {
             sender.sendMessage("This command is only for players");
             return;
@@ -267,6 +286,9 @@ public class AppearanceCommand implements CommandExecutor {
     }
 
     private void handleWand(CommandSender sender, String[] args) {
+        if (noPermission(sender, "dba.command.wand")) {
+            return;
+        }
         if (!(sender instanceof Player player)) {
             sender.sendMessage("This command is only for players");
             return;
@@ -276,6 +298,9 @@ public class AppearanceCommand implements CommandExecutor {
     }
 
     private void handleClear(CommandSender sender, String[] args) {
+        if (noPermission(sender, "dba.command.clear")) {
+            return;
+        }
         if (!(sender instanceof Player player)) {
             sender.sendMessage("This command is only for players");
             return;
@@ -317,6 +342,9 @@ public class AppearanceCommand implements CommandExecutor {
     }
 
     private void handleUndo(CommandSender sender, String[] args) {
+        if (noPermission(sender, "dba.command.undo")) {
+            return;
+        }
         if (!(sender instanceof Player player)) {
             sender.sendMessage("This command is only for players");
             return;
@@ -356,5 +384,13 @@ public class AppearanceCommand implements CommandExecutor {
             viewService.update(p);
         }
         player.sendMessage(undone + " change(s) undone (" + blocks + " blocks)");
+    }
+
+    private boolean noPermission(CommandSender sender, String perm) {
+        if (sender.hasPermission(perm)) {
+            return false;
+        }
+        sender.sendMessage("No permission");
+        return true;
     }
 }

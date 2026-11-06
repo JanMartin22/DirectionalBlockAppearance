@@ -12,9 +12,40 @@ commands:
     description: Main command
     usage: /<command> <subcommand>
     aliases: [ directionalblockappearance ]
-    permission: dba.admin
 
 permissions:
   dba.admin:
-    description: Access to all DBA commands
+    description: Access to everything
+    default: op
+    children:
+      dba.command.wand: true
+      dba.command.pos: true
+      dba.command.set: true
+      dba.command.quickset: true
+      dba.command.clear: true
+      dba.command.undo: true
+      dba.command.group.list: true
+      dba.command.group.create: true
+      dba.command.group.delete: true
+      dba.break: true
+
+  dba.command.wand:
+    default: op
+  dba.command.pos:
+    default: op
+  dba.command.set:
+    default: op
+  dba.command.quickset:
+    default: op
+  dba.command.clear:
+    default: op
+  dba.command.undo:
+    default: op
+  dba.command.group.list:
+    default: op
+  dba.command.group.create:
+    default: op
+  dba.command.group.delete:
+    default: op
+  dba.break:
     default: op

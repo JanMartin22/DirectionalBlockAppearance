@@ -15,7 +15,7 @@ public class AppearanceManager {
 
     public ViewGroup createGroup(String name, ViewMode mode) {
         if (groups.containsKey(name)) {
-            return null;  // Gibt null zurück wenn der Name schon vergeben ist.
+            return null;
         } else {
             ViewGroup vg = new ViewGroup(name, mode);
             groups.put(name, vg);

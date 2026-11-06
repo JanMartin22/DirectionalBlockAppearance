@@ -28,6 +28,9 @@ public class WandListener implements Listener {
         if (!wand.isWand(e.getItem())){
             return;
         }
+        if (!e.getPlayer().hasPermission("dba.command.pos")) {
+            return;
+        }
         if(e.getAction() != Action.LEFT_CLICK_BLOCK && e.getAction() != Action.RIGHT_CLICK_BLOCK){
             return;
         }

@@ -37,7 +37,7 @@ public class ProtectionListener implements Listener {
             return;
         }
         Player player = event.getPlayer();
-        if (!player.hasPermission("dba.admin")) {
+        if (!player.hasPermission("dba.break")) {
             event.setCancelled(true);
             player.sendMessage("This block is protected");
             Bukkit.getScheduler().runTask(plugin, () -> viewService.resync(player));
