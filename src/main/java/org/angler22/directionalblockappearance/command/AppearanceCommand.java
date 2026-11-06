@@ -2,6 +2,7 @@ package org.angler22.directionalblockappearance.command;
 
 import org.angler22.directionalblockappearance.manager.AppearanceManager;
 import org.angler22.directionalblockappearance.manager.SelectionManager;
+import org.angler22.directionalblockappearance.manager.UndoManager;
 import org.angler22.directionalblockappearance.model.*;
 import org.angler22.directionalblockappearance.view.ViewService;
 import org.angler22.directionalblockappearance.wand.Wand;
@@ -16,6 +17,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.util.RayTraceResult;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 
 public class AppearanceCommand implements CommandExecutor {
 
@@ -23,19 +28,21 @@ public class AppearanceCommand implements CommandExecutor {
     private final ViewService viewService;
     private final SelectionManager selectionManager;
     private final Wand wand;
+    private final UndoManager undoManager;
 
 
-    public AppearanceCommand(AppearanceManager manager, ViewService viewService, SelectionManager selectionManager, Wand wand) {
+    public AppearanceCommand(AppearanceManager manager, ViewService viewService, SelectionManager selectionManager, Wand wand, UndoManager undoManager) {
         this.manager = manager;
         this.viewService = viewService;
         this.selectionManager = selectionManager;
         this.wand = wand;
+        this.undoManager = undoManager;
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0) {
-            sender.sendMessage("Usage: /dba <test|group|pos1|pos2|quickset|clear>");
+            sender.sendMessage("Usage: /dba <test|group|pos1|pos2|quickset|clear|undo>");
             return true;
         }
         if (args[0].equalsIgnoreCase("test")) {
@@ -54,6 +61,8 @@ public class AppearanceCommand implements CommandExecutor {
             handleWand(sender, args);
         } else if (args[0].equalsIgnoreCase("clear")) {
             handleClear(sender, args);
+        } else if (args[0].equalsIgnoreCase("undo")) {
+            handleUndo(sender, args);
         } else {
             sender.sendMessage("Unknown subcommand");
         }
@@ -188,6 +197,7 @@ public class AppearanceCommand implements CommandExecutor {
         }
         Block block = hit.getHitBlock();
         BlockFace face = hit.getHitBlockFace();
+        BlockBackup before = backup(block);
         SetResult result = applyView(group, block, face, mat.createBlockData());
         if (result == SetResult.ADDED) {
             player.sendMessage("Block added to " + group.getName() + ": " + face + " -> " + mat);
@@ -197,6 +207,7 @@ public class AppearanceCommand implements CommandExecutor {
             player.sendMessage("Block belongs to another group");
             return;
         }
+        undoManager.push(player, List.of(before));
         for (Player p : Bukkit.getOnlinePlayers()) {
             viewService.update(p);
         }
@@ -261,18 +272,25 @@ public class AppearanceCommand implements CommandExecutor {
         int updated = 0;
         int skipped = 0;
 
+        List<BlockBackup> change = new ArrayList<>();
         for (Block b : sel.getBlocks()) {
             if (b.getType().isAir()) {
                 continue;
             }
+            BlockBackup before = backup(b);
             SetResult result = applyView(group, b, face, data);
             if (result == SetResult.ADDED) {
                 added++;
+                change.add(before);
             } else if (result == SetResult.UPDATED) {
                 updated++;
+                change.add(before);
             } else {
                 skipped++;
             }
+        }
+        if (!change.isEmpty()) {
+            undoManager.push(player, change);
         }
         for (Player p : Bukkit.getOnlinePlayers()) {
             viewService.update(p);
@@ -303,16 +321,72 @@ public class AppearanceCommand implements CommandExecutor {
             player.sendMessage("Selection too large (max. 10000 blocks)");
             return;
         }
+        List<BlockBackup> change = new ArrayList<>();
         int removed = 0;
         for (Block b : sel.getBlocks()) {
             BlockKey key = new BlockKey(b);
             if (manager.getBlock(key) == null) {
                 continue;
             }
+            change.add(backup(b));
             manager.removeBlock(key);
             viewService.restore(key);
             removed++;
         }
+        if (!change.isEmpty()) {
+            undoManager.push(player, change);
+        }
         player.sendMessage(removed + " DBA blocks removed");
+    }
+
+    private BlockBackup backup(Block block) {
+        BlockKey key = new BlockKey(block);
+        ViewBlock existing = manager.getBlock(key);
+        if (existing == null) {
+            return new BlockBackup(key, null, Map.of());
+        }
+        return new BlockBackup(key, existing.getGroup().getName(), existing.getViews());
+    }
+
+    private void handleUndo(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("This command is only for players");
+            return;
+        }
+        int amount = 1;
+        if (args.length >= 2) {
+            try {
+                amount = Integer.parseInt(args[1]);
+            } catch (NumberFormatException e) {
+                player.sendMessage("Not a number: " + args[1]);
+                return;
+            }
+            if (amount < 1) {
+                player.sendMessage("Amount must be at least 1");
+                return;
+            }
+        }
+        int undone = 0;
+        int blocks = 0;
+        for (int i = 0; i < amount; i++) {
+            List<BlockBackup> change = undoManager.pop(player);
+            if (change == null) {
+                break;
+            }
+            for (BlockBackup b : change) {
+                viewService.restore(b.getKey());
+                manager.restoreBackup(b);
+                blocks++;
+            }
+            undone++;
+        }
+        if (undone == 0) {
+            player.sendMessage("Nothing to undo");
+            return;
+        }
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            viewService.update(p);
+        }
+        player.sendMessage(undone + " change(s) undone (" + blocks + " blocks)");
     }
 }

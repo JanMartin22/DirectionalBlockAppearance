@@ -6,6 +6,7 @@ import org.angler22.directionalblockappearance.listener.ViewListener;
 import org.angler22.directionalblockappearance.listener.WandListener;
 import org.angler22.directionalblockappearance.manager.AppearanceManager;
 import org.angler22.directionalblockappearance.manager.SelectionManager;
+import org.angler22.directionalblockappearance.manager.UndoManager;
 import org.angler22.directionalblockappearance.storage.Storage;
 import org.angler22.directionalblockappearance.storage.YamlStorage;
 import org.angler22.directionalblockappearance.view.ViewService;
@@ -21,6 +22,7 @@ public final class DirectionalBlockAppearance extends JavaPlugin {
     private ViewService viewService;
     private SelectionManager selectionManager;
     private Wand wand;
+    private UndoManager undoManager;
 
 
     @Override
@@ -32,6 +34,7 @@ public final class DirectionalBlockAppearance extends JavaPlugin {
         viewService = new ViewService(manager, 48);
         selectionManager = new SelectionManager();
         wand = new Wand(this);
+        undoManager = new UndoManager();
 
 
         getServer().getPluginManager().registerEvents(new ProtectionListener(manager, viewService, this), this);
@@ -51,7 +54,7 @@ public final class DirectionalBlockAppearance extends JavaPlugin {
 
 
 
-        getCommand("dba").setExecutor(new AppearanceCommand(manager, viewService, selectionManager, wand));
+        getCommand("dba").setExecutor(new AppearanceCommand(manager, viewService, selectionManager, wand, undoManager));
 
         getLogger().info("Enabled");
     }

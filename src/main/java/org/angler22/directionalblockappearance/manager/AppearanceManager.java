@@ -1,9 +1,6 @@
 package org.angler22.directionalblockappearance.manager;
 
-import org.angler22.directionalblockappearance.model.BlockKey;
-import org.angler22.directionalblockappearance.model.ViewBlock;
-import org.angler22.directionalblockappearance.model.ViewGroup;
-import org.angler22.directionalblockappearance.model.ViewMode;
+import org.angler22.directionalblockappearance.model.*;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -16,63 +13,65 @@ public class AppearanceManager {
     private final Map<BlockKey, ViewBlock> index = new HashMap<>();
     private boolean changed = false;
 
-public ViewGroup createGroup(String name, ViewMode mode){
-    if(groups.containsKey(name)){
-        return null;  // Gibt null zurück wenn der Name schon vergeben ist.
-    } else {
-       ViewGroup vg = new ViewGroup(name, mode);
-       groups.put(name, vg);
-       changed = true;
-       return vg;
+    public ViewGroup createGroup(String name, ViewMode mode) {
+        if (groups.containsKey(name)) {
+            return null;  // Gibt null zurück wenn der Name schon vergeben ist.
+        } else {
+            ViewGroup vg = new ViewGroup(name, mode);
+            groups.put(name, vg);
+            changed = true;
+            return vg;
+        }
     }
-}
-public ViewGroup getGroup(String name){
-    return groups.get(name);
-}
 
-public ViewBlock getBlock(BlockKey key){
-    return index.get(key);
-}
-
-public ViewBlock addBlock(ViewGroup group, Block block, BlockFace face, BlockData data){
-    BlockKey key = new BlockKey(block);
-    if(index.containsKey(key)){
-        return null;
+    public ViewGroup getGroup(String name) {
+        return groups.get(name);
     }
-    ViewBlock vb = new ViewBlock(key, group);
-    vb.setView(face, data);
-    group.addBlock(vb);
-    index.put(key, vb);
-    changed = true;
-    return vb;
-}
 
-public void removeBlock(BlockKey key){
-    ViewBlock vb = index.get(key);
-    index.remove(key);
-    if(vb != null){
-        vb.getGroup().removeBlock(key);
+    public ViewBlock getBlock(BlockKey key) {
+        return index.get(key);
+    }
+
+    public ViewBlock addBlock(ViewGroup group, Block block, BlockFace face, BlockData data) {
+        BlockKey key = new BlockKey(block);
+        if (index.containsKey(key)) {
+            return null;
+        }
+        ViewBlock vb = new ViewBlock(key, group);
+        vb.setView(face, data);
+        group.addBlock(vb);
+        index.put(key, vb);
         changed = true;
+        return vb;
     }
-}
 
-public List<ViewBlock> getNearby(Location loc, double r){
-    List<ViewBlock> list = new ArrayList<>();
-
-    for(ViewBlock vb : index.values()){
-        Location center = vb.getKey().toCenter();
-       if(center == null){
-           continue;
-       }
-        if (!center.getWorld().equals(loc.getWorld())) {
-            continue;
-        }
-        if(center.distanceSquared(loc) <= r * r){
-            list.add(vb);
+    public void removeBlock(BlockKey key) {
+        ViewBlock vb = index.get(key);
+        index.remove(key);
+        if (vb != null) {
+            vb.getGroup().removeBlock(key);
+            changed = true;
         }
     }
-    return list;
-}
+
+    public List<ViewBlock> getNearby(Location loc, double r) {
+        List<ViewBlock> list = new ArrayList<>();
+
+        for (ViewBlock vb : index.values()) {
+            Location center = vb.getKey().toCenter();
+            if (center == null) {
+                continue;
+            }
+            if (!center.getWorld().equals(loc.getWorld())) {
+                continue;
+            }
+            if (center.distanceSquared(loc) <= r * r) {
+                list.add(vb);
+            }
+        }
+        return list;
+    }
+
     public Collection<ViewGroup> getGroups() {
         return Collections.unmodifiableCollection(groups.values());
     }
@@ -87,6 +86,7 @@ public List<ViewBlock> getNearby(Location loc, double r){
         changed = true;
         return vb;
     }
+
     public boolean hasChanged() {
         return changed;
     }
@@ -107,10 +107,25 @@ public List<ViewBlock> getNearby(Location loc, double r){
         return group;
     }
 
-    public void replaceView(ViewBlock vb, BlockFace face, BlockData data){
+    public void replaceView(ViewBlock vb, BlockFace face, BlockData data) {
 
         vb.clearViews();
         vb.setView(face, data);
         changed = true;
+    }
+
+    public void restoreBackup(BlockBackup backup) {
+        removeBlock(backup.getKey());
+        if (backup.getGroupName() == null) {
+            return;
+        }
+        ViewGroup group = getGroup(backup.getGroupName());
+        if (group == null) {
+            return;
+        }
+        ViewBlock vb = addBlock(group, backup.getKey());
+        for (Map.Entry<BlockFace, BlockData> entry : backup.getViews().entrySet()) {
+            vb.setView(entry.getKey(), entry.getValue());
+        }
     }
 }
