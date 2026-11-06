@@ -35,7 +35,7 @@ public class AppearanceCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0) {
-            sender.sendMessage("Usage: /dba <test|group|pos1|pos2|quickset>");
+            sender.sendMessage("Usage: /dba <test|group|pos1|pos2|quickset|clear>");
             return true;
         }
         if (args[0].equalsIgnoreCase("test")) {
@@ -52,6 +52,8 @@ public class AppearanceCommand implements CommandExecutor {
             handleSet(sender, args);
         } else if (args[0].equalsIgnoreCase("wand")) {
             handleWand(sender, args);
+        } else if (args[0].equalsIgnoreCase("clear")) {
+            handleClear(sender, args);
         } else {
             sender.sendMessage("Unknown subcommand");
         }
@@ -285,5 +287,32 @@ public class AppearanceCommand implements CommandExecutor {
         }
         player.getInventory().addItem(wand.createWand());
         player.sendMessage("DBA-Wand added to your Inventory");
+    }
+
+    private void handleClear(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("This command is only for players");
+            return;
+        }
+        Selection sel = selectionManager.getSelection(player);
+        if (!sel.isComplete()) {
+            player.sendMessage("Set pos1 and pos2 first");
+            return;
+        }
+        if (sel.getVolume() > 10000) {
+            player.sendMessage("Selection too large (max. 10000 blocks)");
+            return;
+        }
+        int removed = 0;
+        for (Block b : sel.getBlocks()) {
+            BlockKey key = new BlockKey(b);
+            if (manager.getBlock(key) == null) {
+                continue;
+            }
+            manager.removeBlock(key);
+            viewService.restore(key);
+            removed++;
+        }
+        player.sendMessage(removed + " DBA blocks removed");
     }
 }
