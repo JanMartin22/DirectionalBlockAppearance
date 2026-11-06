@@ -4,6 +4,7 @@ import org.angler22.directionalblockappearance.manager.AppearanceManager;
 import org.angler22.directionalblockappearance.manager.SelectionManager;
 import org.angler22.directionalblockappearance.model.*;
 import org.angler22.directionalblockappearance.view.ViewService;
+import org.angler22.directionalblockappearance.wand.Wand;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
@@ -21,12 +22,14 @@ public class AppearanceCommand implements CommandExecutor {
     private final AppearanceManager manager;
     private final ViewService viewService;
     private final SelectionManager selectionManager;
+    private final Wand wand;
 
 
-    public AppearanceCommand(AppearanceManager manager, ViewService viewService, SelectionManager selectionManager) {
+    public AppearanceCommand(AppearanceManager manager, ViewService viewService, SelectionManager selectionManager, Wand wand) {
         this.manager = manager;
         this.viewService = viewService;
         this.selectionManager = selectionManager;
+        this.wand = wand;
     }
 
     @Override
@@ -47,6 +50,8 @@ public class AppearanceCommand implements CommandExecutor {
             handleQuickset(sender, args);
         } else if (args[0].equalsIgnoreCase("set")) {
             handleSet(sender, args);
+        } else if (args[0].equalsIgnoreCase("wand")) {
+            handleWand(sender, args);
         } else {
             sender.sendMessage("Unknown subcommand");
         }
@@ -271,5 +276,14 @@ public class AppearanceCommand implements CommandExecutor {
             viewService.update(p);
         }
         player.sendMessage(face + " -> " + mat + ": " + added + " added, " + updated + " updated, " + skipped + " skipped");
+    }
+
+    private void handleWand(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("This command is only for players");
+            return;
+        }
+        player.getInventory().addItem(wand.createWand());
+        player.sendMessage("DBA-Wand added to your Inventory");
     }
 }
