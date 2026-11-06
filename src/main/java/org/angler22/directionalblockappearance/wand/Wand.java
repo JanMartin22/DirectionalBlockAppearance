@@ -12,13 +12,20 @@ import java.util.List;
 
 public class Wand {
     private final NamespacedKey key;
+    private final Material material;
 
     public Wand(Plugin plugin) {
         this.key = new NamespacedKey(plugin, "wand");
+        Material m = Material.matchMaterial(plugin.getConfig().getString("wand.item", "GOLDEN_AXE"));
+        if (m != null && m.isItem() && !m.isAir()) {
+            this.material = m;
+        } else {
+            this.material = Material.GOLDEN_AXE;
+        }
     }
 
     public ItemStack createWand() {
-        ItemStack itemStack = new ItemStack(Material.GOLDEN_AXE);
+        ItemStack itemStack = new ItemStack(material);
         ItemMeta meta = itemStack.getItemMeta();
         meta.setDisplayName("DBA-Wand");
         meta.setLore(List.of("Left click: pos1", "Right click: pos2"));

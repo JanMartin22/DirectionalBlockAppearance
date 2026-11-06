@@ -13,11 +13,13 @@ public class ViewListener implements Listener {
 
     private final Plugin plugin;
     private final ViewService viewService;
+    private final long teleportDelay;
 
 
     public ViewListener(Plugin plugin, ViewService viewService) {
         this.plugin = plugin;
         this.viewService = viewService;
+        this.teleportDelay = plugin.getConfig().getLong("view.teleport-delay", 10);
     }
 
     @EventHandler
@@ -48,19 +50,19 @@ public class ViewListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onTeleport(PlayerTeleportEvent event) {
         Player player = event.getPlayer();
-        Bukkit.getScheduler().runTaskLater(plugin, () -> viewService.resync(player), 10L);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> viewService.resync(player), teleportDelay);
     }
 
     @EventHandler
     public void onRespawn(PlayerRespawnEvent event) {
         Player player = event.getPlayer();
-        Bukkit.getScheduler().runTaskLater(plugin, () -> viewService.resync(player), 10L);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> viewService.resync(player), teleportDelay);
     }
 
     @EventHandler
     public void onWorldChange(PlayerChangedWorldEvent event) {
         Player player = event.getPlayer();
-        Bukkit.getScheduler().runTaskLater(plugin, () -> viewService.resync(player), 10L);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> viewService.resync(player), teleportDelay);
     }
 }
 

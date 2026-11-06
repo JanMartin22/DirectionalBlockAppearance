@@ -28,19 +28,20 @@ public final class DirectionalBlockAppearance extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        saveDefaultConfig();
         manager = new AppearanceManager();
         storage = new YamlStorage(new File(getDataFolder(), "groups.yml"), getLogger());
         storage.loadAll(manager);
         manager.markSaved();
-        viewService = new ViewService(manager, 48);
+        viewService = new ViewService(manager, getConfig().getDouble("view.distance", 48));
         selectionManager = new SelectionManager();
         wand = new Wand(this);
-        undoManager = new UndoManager();
-
+        undoManager = new UndoManager(getConfig().getInt("undo.max-steps", 15));
 
         getServer().getPluginManager().registerEvents(new ProtectionListener(manager, viewService, this), this);
 
-        Bukkit.getScheduler().runTaskTimer(this, () -> viewService.resyncAll(), 40L, 40L);
+        long resyncInterval = getConfig().getLong("view.resync-interval", 40);
+        Bukkit.getScheduler().runTaskTimer(this, () -> viewService.resyncAll(), resyncInterval, resyncInterval);
 
         getServer().getPluginManager().registerEvents(new ViewListener(this, viewService), this);
 
@@ -48,21 +49,24 @@ public final class DirectionalBlockAppearance extends JavaPlugin {
 
         getCommand("dba").setTabCompleter(new AppearanceTabCompleter(manager));
 
+        long autosaveInterval = getConfig().getLong("storage.autosave-interval", 600);
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             if (manager.hasChanged()) {
                 storage.saveAll(manager);
                 manager.markSaved();
             }
-        }, 600L, 600L);
+        }, autosaveInterval, autosaveInterval);
 
 
-
-        getCommand("dba").setExecutor(new AppearanceCommand(manager, viewService, selectionManager, wand, undoManager));
+        getCommand("dba").setExecutor(new AppearanceCommand(manager, viewService, selectionManager, wand, undoManager,
+                getConfig().getInt("selection.range", 25),
+                getConfig().getInt("selection.max-blocks", 10000)));
 
         getLogger().info("Enabled");
     }
+
     @Override
-    public void onDisable(){
+    public void onDisable() {
         viewService.restoreAll();
         storage.saveAll(manager);
     }

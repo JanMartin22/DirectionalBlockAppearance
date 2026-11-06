@@ -16,7 +16,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.util.RayTraceResult;
-import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,14 +29,18 @@ public class AppearanceCommand implements CommandExecutor {
     private final SelectionManager selectionManager;
     private final Wand wand;
     private final UndoManager undoManager;
+    private final int selectionRange;
+    private final int maxBlocks;
 
 
-    public AppearanceCommand(AppearanceManager manager, ViewService viewService, SelectionManager selectionManager, Wand wand, UndoManager undoManager) {
+    public AppearanceCommand(AppearanceManager manager, ViewService viewService, SelectionManager selectionManager, Wand wand, UndoManager undoManager, int selectionRange, int maxBlocks) {
         this.manager = manager;
         this.viewService = viewService;
         this.selectionManager = selectionManager;
         this.wand = wand;
         this.undoManager = undoManager;
+        this.selectionRange = selectionRange;
+        this.maxBlocks = maxBlocks;
     }
 
     @Override
@@ -136,9 +139,9 @@ public class AppearanceCommand implements CommandExecutor {
             return;
         }
 
-        RayTraceResult hit = player.rayTraceBlocks(25);
+        RayTraceResult hit = player.rayTraceBlocks(selectionRange);
         if (hit == null || hit.getHitBlock() == null) {
-            player.sendMessage("Look at a block (max. 25 blocks away)");
+            player.sendMessage("Look at a block (max. " + selectionRange + " blocks away)");
             return;
         }
         Block block = hit.getHitBlock();
@@ -174,9 +177,9 @@ public class AppearanceCommand implements CommandExecutor {
             player.sendMessage("Unknown block!");
             return;
         }
-        RayTraceResult hit = player.rayTraceBlocks(25);
+        RayTraceResult hit = player.rayTraceBlocks(selectionRange);
         if (hit == null || hit.getHitBlock() == null || hit.getHitBlockFace() == null) {
-            player.sendMessage("Look at a block (max. 25 blocks away)");
+            player.sendMessage("Look at a block (max. " + selectionRange + " blocks away)");
             return;
         }
         Block block = hit.getHitBlock();
@@ -238,8 +241,8 @@ public class AppearanceCommand implements CommandExecutor {
             player.sendMessage("Set pos1 and pos2 first");
             return;
         }
-        if (sel.getVolume() > 10000) {
-            player.sendMessage("Selection too large (max. 10000 blocks)");
+        if (sel.getVolume() > maxBlocks) {
+            player.sendMessage("Selection too large (max. " + maxBlocks + " blocks)");
             return;
         }
 
@@ -310,8 +313,8 @@ public class AppearanceCommand implements CommandExecutor {
             player.sendMessage("Set pos1 and pos2 first");
             return;
         }
-        if (sel.getVolume() > 10000) {
-            player.sendMessage("Selection too large (max. 10000 blocks)");
+        if (sel.getVolume() > maxBlocks) {
+            player.sendMessage("Selection too large (max. " + maxBlocks + " blocks)");
             return;
         }
         List<BlockBackup> change = new ArrayList<>();

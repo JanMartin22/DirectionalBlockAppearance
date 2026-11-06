@@ -7,6 +7,11 @@ import java.util.*;
 
 public class UndoManager {
     private final Map<UUID, List<List<BlockBackup>>> history = new HashMap<>();
+    private final int maxSteps;
+
+    public UndoManager(int maxSteps) {
+        this.maxSteps = maxSteps;
+    }
 
     public void push(Player player, List<BlockBackup> change) {
         List<List<BlockBackup>> list = history.get(player.getUniqueId());
@@ -15,7 +20,7 @@ public class UndoManager {
             history.put(player.getUniqueId(), list);
         }
         list.add(change);
-        if (list.size() > 15) {
+        if(list.size() > maxSteps) {
             list.remove(0);
         }
     }

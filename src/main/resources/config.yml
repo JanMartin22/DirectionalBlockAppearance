@@ -1,0 +1,27 @@
+view:
+  distance: 48            # Radius in which DBA blocks are shown
+  resync-interval: 40     # Ticks between safety resyncs (20 = 1 s)
+  teleport-delay: 10      # Ticks after teleport/respawn/world change before resync
+
+selection:
+  range: 25               # Reach for pos1/pos2 and quickset
+  max-blocks: 10000       # Max selection size for set/clear
+
+undo:
+  max-steps: 15           # Undo steps per player
+
+wand:
+  item: GOLDEN_AXE        # Material of the selection wand
+
+storage:
+  autosave-interval: 600  # Ticks between autosaves (600 = 30 s)
+
+protection:               # true = protected, false = allowed
+  break: true             # Breaking (also requires permission dba.break)
+  place: true             # Placing blocks/buckets on DBA positions
+  pistons: true           # Pistons
+  explosions: true        # TNT, creepers etc.
+  entities: true          # Endermen, falling sand etc.
+  fire: true              # Burning
+  liquids: true           # Water/lava, sponges
+  nature: true            # Leaf decay, melting, growth
