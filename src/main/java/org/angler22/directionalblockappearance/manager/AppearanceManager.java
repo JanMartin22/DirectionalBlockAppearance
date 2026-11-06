@@ -106,4 +106,11 @@ public List<ViewBlock> getNearby(Location loc, double r){
         changed = true;
         return group;
     }
+
+    public void replaceView(ViewBlock vb, BlockFace face, BlockData data){
+
+        vb.clearViews();
+        vb.setView(face, data);
+        changed = true;
+    }
 }

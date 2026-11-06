@@ -4,6 +4,7 @@ import org.angler22.directionalblockappearance.manager.AppearanceManager;
 import org.angler22.directionalblockappearance.manager.SelectionManager;
 import org.angler22.directionalblockappearance.model.*;
 import org.angler22.directionalblockappearance.view.ViewService;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Block;
@@ -41,6 +42,8 @@ public class AppearanceCommand implements CommandExecutor {
             handlePosition(sender, args);
         } else if (args[0].equalsIgnoreCase("pos2")){
             handlePosition(sender, args);
+        } else if (args[0].equalsIgnoreCase("set")) {
+        handleSet(sender, args);
         } else{
             sender.sendMessage("Unknown subcommand");
         }
@@ -147,4 +150,46 @@ public class AppearanceCommand implements CommandExecutor {
         player.sendMessage(args[0] + " set (" + block.getX() + ", " + block.getY() + ", " + block.getZ() + ")");
     }
 
+    private void handleSet(CommandSender sender, String[] args){
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("This command is only for players");
+            return;
+        }
+        if(args.length <3){
+            player.sendMessage("Usage: /dba set <group> <block>");
+            return;
+        }
+        ViewGroup group = manager.getGroup(args[1]);
+        if(group == null){
+            player.sendMessage("Group " + args[1] + " doesn't exist");
+            return;
+        }
+        Material mat = Material.matchMaterial(args[2]);
+        if(mat == null || !mat.isBlock()){
+            player.sendMessage("Unknown block!");
+            return;
+        }
+        RayTraceResult hit = player.rayTraceBlocks(25);
+        if(hit == null || hit.getHitBlock() == null || hit.getHitBlockFace() == null){
+            player.sendMessage("Look at a block (max. 25 blocks away)");
+            return;
+        }
+        Block block = hit.getHitBlock();
+        BlockFace face = hit.getHitBlockFace();
+        ViewBlock existing = manager.getBlock(new BlockKey(block));
+        if(existing != null){
+            if(existing.getGroup() != group){
+                player.sendMessage("Block belongs to group " + existing.getGroup().getName());
+                return;
+            }
+            manager.replaceView(existing, face, mat.createBlockData());
+            player.sendMessage("View updated: " + face + "-> " + mat);
+        } else {
+            manager.addBlock(group, block, face, mat.createBlockData());
+            player.sendMessage("Block added to " + group.getName() + ": " + face + " -> " + mat);
+        }
+        for (Player p : Bukkit.getOnlinePlayers()){
+            viewService.update(p);
+        }
+    }
 }

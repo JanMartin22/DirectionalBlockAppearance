@@ -53,5 +53,9 @@ public class ViewBlock {
         }
         return center.getBlock().getBlockData();
     }
+
+    public void clearViews(){
+        views.clear();
+    }
 }
 

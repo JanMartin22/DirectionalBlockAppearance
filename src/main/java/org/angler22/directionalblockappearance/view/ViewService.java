@@ -60,8 +60,10 @@ public final class ViewService {
         }
     }
     public void clear(Player player) {
+
         sentViews.remove(player.getUniqueId());
     }
+
     public void forget(BlockKey key) {
         for (Map<BlockKey, BlockData> playerViews : sentViews.values()) {
             playerViews.remove(key);
