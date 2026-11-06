@@ -26,17 +26,12 @@ No resource pack, no client mod required.
 | `/dba set <group> <block> [side]` | Sets one side of all blocks in your selection. Without a side, the side facing you is used | `dba.admin` |
 | `/dba quickset <group> <block>` | Sets the side you're looking at, only for that one block | `dba.admin` |
 | `/dba clear` | Removes all DBA blocks in your selection | `dba.admin` |
+| `/dba undo [amount]` | Undoes your last changes (up to 15) | `dba.admin` |
 | `/dba group create <name>` | Creates a new group | `dba.admin` |
-| `/dba group delete <name>` | Deletes a group and all its blocks | `dba.admin` |
+| `/dba group delete <name>` | Deletes a group and all its blocks (cannot be undone) | `dba.admin` |
 | `/dba group list` | Lists all groups with their block count | `dba.admin` |
 
 Blocks that already belong to another group are skipped by `set` and `quickset`.
-
-### Planned
-
-| Command | Description |
-|---|---|
-| `/dba undo` | Undoes your last change |
 
 ## License
 
