@@ -21,21 +21,22 @@ No resource pack, no client mod required.
 
 | Command | Description | Permission |
 |---|---|---|
+| `/dba wand` | Gives you the selection wand (left click: pos1, right click: pos2) | `dba.admin` |
+| `/dba pos1` / `/dba pos2` | Sets a selection corner to the block you're looking at | `dba.admin` |
+| `/dba set <group> <block> [side]` | Sets one side of all blocks in your selection. Without a side, the side facing you is used | `dba.admin` |
+| `/dba quickset <group> <block>` | Sets the side you're looking at, only for that one block | `dba.admin` |
+| `/dba clear` | Removes all DBA blocks in your selection | `dba.admin` |
 | `/dba group create <name>` | Creates a new group | `dba.admin` |
 | `/dba group delete <name>` | Deletes a group and all its blocks | `dba.admin` |
 | `/dba group list` | Lists all groups with their block count | `dba.admin` |
-| `/dba pos1` / `/dba pos2` | Sets a selection corner to the block you're looking at | `dba.admin` |
-| `/dba test` | Turns the block you're looking at into a test block (glass facing you) | `dba.admin` |
+
+Blocks that already belong to another group are skipped by `set` and `quickset`.
 
 ### Planned
 
 | Command | Description |
 |---|---|
-| `/dba set <group> <block>` | Sets the side you're looking at to a block |
-| `/dba fill <group> <side> <block>` | Sets one side of all blocks in your selection |
-| `/dba remove` | Removes the DBA block you're looking at |
-| `/dba clear` | Removes all DBA blocks in your selection |
-| `/dba wand` | Gives you the selection wand (left click: pos1, right click: pos2) |
+| `/dba undo` | Undoes your last change |
 
 ## License
 
