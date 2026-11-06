@@ -1,6 +1,7 @@
 package org.angler22.directionalblockappearance;
 
 import org.angler22.directionalblockappearance.command.AppearanceCommand;
+import org.angler22.directionalblockappearance.command.AppearanceTabCompleter;
 import org.angler22.directionalblockappearance.listener.ProtectionListener;
 import org.angler22.directionalblockappearance.listener.ViewListener;
 import org.angler22.directionalblockappearance.listener.WandListener;
@@ -44,6 +45,8 @@ public final class DirectionalBlockAppearance extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new ViewListener(this, viewService), this);
 
         getServer().getPluginManager().registerEvents(new WandListener(wand, selectionManager), this);
+
+        getCommand("dba").setTabCompleter(new AppearanceTabCompleter(manager));
 
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             if (manager.hasChanged()) {
