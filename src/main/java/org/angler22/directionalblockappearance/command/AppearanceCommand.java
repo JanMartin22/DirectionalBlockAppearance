@@ -42,12 +42,10 @@ public class AppearanceCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0) {
-            sender.sendMessage("Usage: /dba <test|group|pos1|pos2|quickset|clear|undo>");
+            sender.sendMessage("Usage: /dba <wand|pos1|pos2|set|quickset|clear|undo|group>");
             return true;
         }
-        if (args[0].equalsIgnoreCase("test")) {
-            handleTest(sender);
-        } else if (args[0].equalsIgnoreCase("group")) {
+        if (args[0].equalsIgnoreCase("group")) {
             handleGroup(sender, args);
         } else if (args[0].equalsIgnoreCase("pos1")) {
             handlePosition(sender, args);
@@ -67,36 +65,6 @@ public class AppearanceCommand implements CommandExecutor {
             sender.sendMessage("Unknown subcommand");
         }
         return true;
-    }
-
-    private void handleTest(CommandSender sender) {
-
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage("This command is only for players");
-            return;
-        }
-
-        RayTraceResult hit = player.rayTraceBlocks(5);
-        if (hit == null || hit.getHitBlock() == null || hit.getHitBlockFace() == null) {
-            player.sendMessage("Look at a block (max. 5 blocks away)");
-            return;
-        }
-        Block block = hit.getHitBlock();
-        BlockFace face = hit.getHitBlockFace();
-
-        ViewGroup group = manager.getGroup("test");
-        if (group == null) {
-            group = manager.createGroup("test", ViewMode.TWO_SIDED);
-        }
-
-        ViewBlock vb = manager.addBlock(group, block, face, Material.GLASS.createBlockData());
-        if (vb == null) {
-            player.sendMessage("This block is already a DBA block");
-            return;
-        }
-        viewService.update(player);
-        player.sendMessage("Test block created! Glass side: " + face);
-
     }
 
     private void handleGroup(CommandSender sender, String[] args) {
