@@ -56,17 +56,24 @@ public class AppearanceManager {
 
     public List<ViewBlock> getNearby(Location loc, double r) {
         List<ViewBlock> list = new ArrayList<>();
+        double rSquared = r * r;
+        UUID worldId = loc.getWorld().getUID();
 
-        for (ViewBlock vb : index.values()) {
-            Location center = vb.getKey().toCenter();
-            if (center == null) {
+        for (ViewGroup group : groups.values()) {
+            if (!group.isNear(loc, r)) {
                 continue;
             }
-            if (!center.getWorld().equals(loc.getWorld())) {
-                continue;
-            }
-            if (center.distanceSquared(loc) <= r * r) {
-                list.add(vb);
+            for (ViewBlock vb : group.getBlocks().values()) {
+                if (!vb.getKey().getWorld().equals(worldId)) {
+                    continue;
+                }
+                Location center = vb.getKey().toCenter();
+                if (center == null) {
+                    continue;
+                }
+                if (center.distanceSquared(loc) <= rSquared) {
+                    list.add(vb);
+                }
             }
         }
         return list;
