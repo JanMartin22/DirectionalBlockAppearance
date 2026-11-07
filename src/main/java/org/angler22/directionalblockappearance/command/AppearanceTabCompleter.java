@@ -11,7 +11,7 @@ import org.bukkit.util.StringUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-public class tAppearanceTabCompleter implements TabCompleter {
+public class AppearanceTabCompleter implements TabCompleter {
 
     private final AppearanceManager manager;
 
