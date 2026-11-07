@@ -98,6 +98,7 @@ public class ProtectionListener implements Listener {
             }
             if(protectPistons){
                 event.setCancelled(true);
+                Bukkit.getScheduler().runTaskLater(plugin, () -> viewService.resyncAll(), 2L);
                 return;
             }
             removeDba(block);
@@ -112,6 +113,7 @@ public class ProtectionListener implements Listener {
             }
             if(protectPistons) {
                 event.setCancelled(true);
+                Bukkit.getScheduler().runTaskLater(plugin, () -> viewService.resyncAll(), 2L);
                 return;
             }
             removeDba(block);
