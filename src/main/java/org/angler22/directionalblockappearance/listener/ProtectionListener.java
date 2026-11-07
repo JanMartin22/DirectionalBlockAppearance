@@ -7,6 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
@@ -23,15 +24,49 @@ public class ProtectionListener implements Listener {
     private final AppearanceManager manager;
     private final ViewService viewService;
     private final Plugin plugin;
+    private final boolean protectBreak;
+    private final boolean protectPlace;
+    private final boolean protectPistons;
+    private final boolean protectExplosions;
+    private final boolean protectEntities;
+    private final boolean protectFire;
+    private final boolean protectLiquids;
+    private final boolean protectNature;
 
     public ProtectionListener(AppearanceManager manager, ViewService viewService, Plugin plugin) {
         this.manager = manager;
         this.viewService = viewService;
         this.plugin = plugin;
+        this.protectBreak = plugin.getConfig().getBoolean("protection.break", true);
+        this.protectPlace = plugin.getConfig().getBoolean("protection.place", true);
+        this.protectPistons = plugin.getConfig().getBoolean("protection.pistons", true);
+        this.protectExplosions = plugin.getConfig().getBoolean("protection.explosions", true);
+        this.protectEntities = plugin.getConfig().getBoolean("protection.entities", true);
+        this.protectFire = plugin.getConfig().getBoolean("protection.fire", true);
+        this.protectLiquids = plugin.getConfig().getBoolean("protection.liquids", true);
+        this.protectNature = plugin.getConfig().getBoolean("protection.nature", true);
     }
 
     private boolean isDba(Block block) {
         return manager.getBlock(new BlockKey(block)) != null;
+    }
+
+    private void removeDba(Block block) {
+        BlockKey key = new BlockKey(block);
+        if (manager.getBlock(key) != null) {
+            manager.removeBlock(key);
+            viewService.forget(key);
+        }
+    }
+    private void protect(Cancellable event, Block block, boolean enabled) {
+        if (!isDba(block)) {
+            return;
+        }
+        if (enabled) {
+            event.setCancelled(true);
+        } else {
+            removeDba(block);
+        }
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -41,7 +76,7 @@ public class ProtectionListener implements Listener {
             return;
         }
         Player player = event.getPlayer();
-        if (!player.hasPermission("dba.break")) {
+        if (protectBreak && !player.hasPermission("dba.break")) {
             event.setCancelled(true);
             player.sendMessage("This block is protected");
             Bukkit.getScheduler().runTask(plugin, () -> viewService.resync(player));
@@ -55,44 +90,63 @@ public class ProtectionListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onPistonExtend(BlockPistonExtendEvent event) {
         for (Block block : event.getBlocks()) {
-            if (isDba(block)) {
+            if (!isDba(block)) {
+                continue;
+            }
+            if(protectPistons){
                 event.setCancelled(true);
                 return;
             }
+            removeDba(block);
         }
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onPistonRetract(BlockPistonRetractEvent event) {
         for (Block block : event.getBlocks()) {
-            if (isDba(block)) {
+            if (!isDba(block)) {
+                continue;
+            }
+            if(protectPistons) {
                 event.setCancelled(true);
                 return;
             }
+            removeDba(block);
         }
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onEntityExplode(EntityExplodeEvent event) {
-        event.blockList().removeIf(this::isDba);
+        if(protectExplosions){
+            event.blockList().removeIf(this::isDba);
+        } else {
+            for(Block block : event.blockList()) {
+                removeDba(block);
+            }
+        }
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onBlockExplode(BlockExplodeEvent event) {
-        event.blockList().removeIf(this::isDba);
+        if(protectExplosions){
+            event.blockList().removeIf(this::isDba);
+        } else {
+            for(Block block : event.blockList()) {
+                removeDba(block);
+            }
+        }
     }
+
     @EventHandler(ignoreCancelled = true)
     public void onPlace(BlockPlaceEvent event) {
-        if (isDba(event.getBlockPlaced())) {
-            event.setCancelled(true);
-            return;
-        }
+        protect(event, event.getBlockPlaced(), protectPlace);
 
         if (isDba(event.getBlockAgainst())) {
             Player player = event.getPlayer();
             Bukkit.getScheduler().runTask(plugin, () -> viewService.resync(player));
         }
     }
+
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK && event.getAction() != Action.LEFT_CLICK_BLOCK) {
@@ -111,34 +165,34 @@ public class ProtectionListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onEntityChangeBlock(EntityChangeBlockEvent event) {
-        if (isDba(event.getBlock())) {
-            event.setCancelled(true);
-        }
+        protect(event, event.getBlock(), protectEntities);
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onBurn(BlockBurnEvent event) {
-        if (isDba(event.getBlock())) {
-            event.setCancelled(true);
-        }
+        protect(event, event.getBlock(), protectFire);
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onFlow(BlockFromToEvent event) {
-        if (isDba(event.getToBlock())) {
-            event.setCancelled(true);
-        }
+        protect(event, event.getToBlock(), protectLiquids);
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onSpongeAbsorb(SpongeAbsorbEvent event) {
-        event.getBlocks().removeIf(state -> isDba(state.getBlock()));
+        if (protectLiquids) {
+            event.getBlocks().removeIf(state -> isDba(state.getBlock()));
+        } else {
+            for (BlockState state : event.getBlocks()) {
+                removeDba(state.getBlock());
+            }
+        }
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onBucketEmpty(PlayerBucketEmptyEvent event) {
-        if (isDba(event.getBlock())) {
-            event.setCancelled(true);
+        protect(event, event.getBlock(), protectPlace);
+        if (event.isCancelled()) {
             Player player = event.getPlayer();
             Bukkit.getScheduler().runTask(plugin, () -> viewService.resync(player));
         }
@@ -147,64 +201,55 @@ public class ProtectionListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onMultiPlace(BlockMultiPlaceEvent event) {
         for (BlockState state : event.getReplacedBlockStates()) {
-            if (isDba(state.getBlock())) {
-                event.setCancelled(true);
-                return;
-            }
+            protect(event, state.getBlock(), protectPlace);
         }
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onLeavesDecay(LeavesDecayEvent event) {
-        if (isDba(event.getBlock())) {
-            event.setCancelled(true);
-        }
+        protect(event, event.getBlock(), protectNature);
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onFade(BlockFadeEvent event) {
-        if (isDba(event.getBlock())) {
-            event.setCancelled(true);
-        }
+        protect(event, event.getBlock(), protectNature);
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onForm(BlockFormEvent event) {
-        if (isDba(event.getBlock())) {
-            event.setCancelled(true);
-        }
+        protect(event, event.getBlock(), protectNature);
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onSpread(BlockSpreadEvent event) {
-        if (isDba(event.getBlock())) {
-            event.setCancelled(true);
-        }
+        protect(event, event.getBlock(), protectNature);
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onGrow(BlockGrowEvent event) {
-        if (isDba(event.getBlock())) {
-            event.setCancelled(true);
-        }
+        protect(event, event.getBlock(), protectNature);
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onStructureGrow(StructureGrowEvent event) {
-        event.getBlocks().removeIf(state -> isDba(state.getBlock()));
-    }
-
-    @EventHandler(ignoreCancelled = true)
-    public void onEntityBlockForm(EntityBlockFormEvent event) {
-        if (isDba(event.getBlock())) {
-            event.setCancelled(true);
+        if (protectNature) {
+            event.getBlocks().removeIf(state -> isDba(state.getBlock()));
+        } else {
+            for (BlockState state : event.getBlocks()) {
+                removeDba(state.getBlock());
+            }
         }
     }
 
     @EventHandler(ignoreCancelled = true)
+    public void onEntityBlockForm(EntityBlockFormEvent event) {
+        protect(event, event.getBlock(), protectEntities);
+    }
+
+    @EventHandler(ignoreCancelled = true)
     public void onBucketFill(PlayerBucketFillEvent event) {
-        if (isDba(event.getBlock())) {
-            event.setCancelled(true);
+        protect(event, event.getBlock(), protectPlace);
+        if (event.isCancelled()) {
             Player player = event.getPlayer();
             Bukkit.getScheduler().runTask(plugin, () -> viewService.resync(player));
         }
@@ -212,8 +257,6 @@ public class ProtectionListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onFluidChange(FluidLevelChangeEvent event) {
-        if (isDba(event.getBlock())) {
-            event.setCancelled(true);
-        }
+        protect(event, event.getBlock(), protectLiquids);
     }
 }
