@@ -143,10 +143,9 @@ public class ProtectionListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onPlace(BlockPlaceEvent event) {
         protect(event, event.getBlockPlaced(), protectPlace);
-
-        if (isDba(event.getBlockAgainst())) {
+        if (event.isCancelled() || isDba(event.getBlockAgainst())) {
             Player player = event.getPlayer();
-            Bukkit.getScheduler().runTask(plugin, () -> viewService.resync(player));
+            Bukkit.getScheduler().runTaskLater(plugin, () -> viewService.resync(player), 2L);
         }
     }
 
@@ -205,6 +204,10 @@ public class ProtectionListener implements Listener {
     public void onMultiPlace(BlockMultiPlaceEvent event) {
         for (BlockState state : event.getReplacedBlockStates()) {
             protect(event, state.getBlock(), protectPlace);
+        }
+        if (event.isCancelled()) {
+            Player player = event.getPlayer();
+            Bukkit.getScheduler().runTaskLater(plugin, () -> viewService.resync(player), 2L);
         }
     }
 
