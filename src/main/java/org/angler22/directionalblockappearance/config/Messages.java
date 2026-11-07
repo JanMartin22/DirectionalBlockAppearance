@@ -12,11 +12,15 @@ public class Messages {
     public Messages(Plugin plugin) {
 
         this.config = plugin.getConfig();
-        this.prefix = color(config.getString("messages.prefix", "")) ;
+        String p = config.getString("messages.prefix");
+        this.prefix = color(p != null ? p : "");
     }
 
     public String get(String key, String... replacements) {
-        String text = config.getString("messages." + key, key);
+        String text = config.getString("messages." + key);
+        if (text == null) {
+            text = key;
+        }
         for (int i = 0; i + 1 < replacements.length; i += 2) {
             text = text.replace("%" + replacements[i] + "%", replacements[i + 1]);
         }
