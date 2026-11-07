@@ -1,5 +1,6 @@
 package org.angler22.directionalblockappearance.command;
 
+import org.angler22.directionalblockappearance.config.Messages;
 import org.angler22.directionalblockappearance.manager.AppearanceManager;
 import org.angler22.directionalblockappearance.manager.SelectionManager;
 import org.angler22.directionalblockappearance.manager.UndoManager;
@@ -31,9 +32,10 @@ public class AppearanceCommand implements CommandExecutor {
     private final UndoManager undoManager;
     private final int selectionRange;
     private final int maxBlocks;
+    private final Messages messages;
 
 
-    public AppearanceCommand(AppearanceManager manager, ViewService viewService, SelectionManager selectionManager, Wand wand, UndoManager undoManager, int selectionRange, int maxBlocks) {
+    public AppearanceCommand(AppearanceManager manager, ViewService viewService, SelectionManager selectionManager, Wand wand, UndoManager undoManager, Messages messages,  int selectionRange, int maxBlocks) {
         this.manager = manager;
         this.viewService = viewService;
         this.selectionManager = selectionManager;
@@ -41,12 +43,13 @@ public class AppearanceCommand implements CommandExecutor {
         this.undoManager = undoManager;
         this.selectionRange = selectionRange;
         this.maxBlocks = maxBlocks;
+        this.messages = messages;
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0) {
-            sender.sendMessage("Usage: /dba <wand|pos1|pos2|set|quickset|clear|undo|group>");
+            messages.send(sender, "usage");
             return true;
         }
         if (args[0].equalsIgnoreCase("group")) {
@@ -66,14 +69,14 @@ public class AppearanceCommand implements CommandExecutor {
         } else if (args[0].equalsIgnoreCase("undo")) {
             handleUndo(sender, args);
         } else {
-            sender.sendMessage("Unknown subcommand");
+            messages.send(sender, "unknown-subcommand");
         }
         return true;
     }
 
     private void handleGroup(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage("Usage: /dba group <create|delete|list>");
+            messages.send(sender, "usage-group");
             return;
         }
         if (args[1].equalsIgnoreCase("list")) {
@@ -81,11 +84,11 @@ public class AppearanceCommand implements CommandExecutor {
                 return;
             }
             if (manager.getGroups().isEmpty()) {
-                sender.sendMessage("No groups");
+                messages.send(sender, "group-list-empty");
                 return;
             }
             for (ViewGroup group : manager.getGroups()) {
-                sender.sendMessage(group.getName() + " (" + group.getMode() + ", " + group.getBlocks().size() + " blocks)");
+                messages.send(sender, "group-list-entry", "group", group.getName(), "mode", group.getMode().name(), "blocks", String.valueOf(group.getBlocks().size()));
             }
         } else if (args[1].equalsIgnoreCase("create")) {
             handleCreate(sender, args);
@@ -100,15 +103,15 @@ public class AppearanceCommand implements CommandExecutor {
             return;
         }
         if (args.length < 3) {
-            sender.sendMessage("Usage: /dba group create <name>");
+            messages.send(sender, "usage-group-create");
             return;
         }
         ViewGroup group = manager.createGroup(args[2], ViewMode.TWO_SIDED);
         if (group == null) {
-            sender.sendMessage("Group " + args[2] + " already exists");
+            messages.send(sender, "group-exists", "group", args[2]);
             return;
         }
-        sender.sendMessage("Group " + args[2] + " created");
+        messages.send(sender, "group-created", "group", args[2]);
     }
 
     private void handleDelete(CommandSender sender, String[] args) {
@@ -116,18 +119,18 @@ public class AppearanceCommand implements CommandExecutor {
             return;
         }
         if (args.length < 3) {
-            sender.sendMessage("Usage: /dba group delete <name>");
+            messages.send(sender, "usage-group-delete");
             return;
         }
         ViewGroup group = manager.deleteGroup(args[2]);
         if (group == null) {
-            sender.sendMessage("Group " + args[2] + " doesn't exist");
+            messages.send(sender, "group-not-found", "group", args[2]);
             return;
         }
         for (BlockKey key : group.getBlocks().keySet()) {
             viewService.restore(key);
         }
-        sender.sendMessage("Group " + args[2] + " deleted (" + group.getBlocks().size() + " blocks)");
+        messages.send(sender, "group-deleted", "group", args[2], "blocks", String.valueOf(group.getBlocks().size()));
     }
 
     private void handlePosition(CommandSender sender, String[] args) {
@@ -135,13 +138,13 @@ public class AppearanceCommand implements CommandExecutor {
             return;
         }
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("This command is only for players");
+            messages.send(sender, "only-players");
             return;
         }
 
         RayTraceResult hit = player.rayTraceBlocks(selectionRange);
         if (hit == null || hit.getHitBlock() == null) {
-            player.sendMessage("Look at a block (max. " + selectionRange + " blocks away)");
+            messages.send(player, "look-at-block", "range", String.valueOf(selectionRange));
             return;
         }
         Block block = hit.getHitBlock();
@@ -152,7 +155,7 @@ public class AppearanceCommand implements CommandExecutor {
         } else {
             sel.setPos2(block);
         }
-        player.sendMessage(args[0] + " set (" + block.getX() + ", " + block.getY() + ", " + block.getZ() + ")");
+        messages.send(player, "pos-set", "pos", args[0].toLowerCase(), "x", String.valueOf(block.getX()), "y", String.valueOf(block.getY()), "z", String.valueOf(block.getZ()));
     }
 
     private void handleQuickset(CommandSender sender, String[] args) {
@@ -160,26 +163,26 @@ public class AppearanceCommand implements CommandExecutor {
             return;
         }
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("This command is only for players");
+            messages.send(sender, "only-players");
             return;
         }
         if (args.length < 3) {
-            player.sendMessage("Usage: /dba quickset <group> <block>");
+            messages.send(player, "usage-quickset");
             return;
         }
         ViewGroup group = manager.getGroup(args[1]);
         if (group == null) {
-            player.sendMessage("Group " + args[1] + " doesn't exist");
+            messages.send(player, "group-not-found", "group", args[1]);
             return;
         }
         Material mat = Material.matchMaterial(args[2]);
         if (mat == null || !mat.isBlock()) {
-            player.sendMessage("Unknown block!");
+            messages.send(player, "unknown-block", "block", args[2]);
             return;
         }
         RayTraceResult hit = player.rayTraceBlocks(selectionRange);
         if (hit == null || hit.getHitBlock() == null || hit.getHitBlockFace() == null) {
-            player.sendMessage("Look at a block (max. " + selectionRange + " blocks away)");
+            messages.send(player, "look-at-block", "range", String.valueOf(selectionRange));
             return;
         }
         Block block = hit.getHitBlock();
@@ -187,11 +190,11 @@ public class AppearanceCommand implements CommandExecutor {
         BlockBackup before = backup(block);
         SetResult result = applyView(group, block, face, mat.createBlockData());
         if (result == SetResult.ADDED) {
-            player.sendMessage("Block added to " + group.getName() + ": " + face + " -> " + mat);
+            messages.send(player, "quickset-added", "group", group.getName(), "side", face.name(), "block", mat.name());
         } else if (result == SetResult.UPDATED) {
-            player.sendMessage("View updated: " + face + " -> " + mat);
+            messages.send(player, "quickset-updated", "side", face.name(), "block", mat.name());
         } else {
-            player.sendMessage("Block belongs to another group");
+            messages.send(player, "other-group");
             return;
         }
         undoManager.push(player, List.of(before));
@@ -218,31 +221,31 @@ public class AppearanceCommand implements CommandExecutor {
             return;
         }
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("This command is only for players");
+            messages.send(sender, "only-players");
             return;
         }
         if (args.length < 3) {
-            player.sendMessage("Usage: /dba set <group> <block> [side]");
+            messages.send(player,"usage-set");
             return;
         }
         ViewGroup group = manager.getGroup(args[1]);
         if (group == null) {
-            player.sendMessage("Group " + args[1] + " doesn't exist");
+            messages.send(player, "group-not-found", "group", args[1]);
             return;
         }
         Material mat = Material.matchMaterial(args[2]);
         if (mat == null || !mat.isBlock()) {
-            player.sendMessage("Unknown block!");
+            messages.send(player, "unknown-block", "block", args[2]);
             return;
         }
 
         Selection sel = selectionManager.getSelection(player);
         if (!sel.isComplete()) {
-            player.sendMessage("Set pos1 and pos2 first");
+            messages.send(player, "selection-incomplete");
             return;
         }
         if (sel.getVolume() > maxBlocks) {
-            player.sendMessage("Selection too large (max. " + maxBlocks + " blocks)");
+            messages.send(player, "selection-too-large", "max", String.valueOf(maxBlocks));
             return;
         }
 
@@ -251,7 +254,7 @@ public class AppearanceCommand implements CommandExecutor {
             try {
                 face = BlockFace.valueOf(args[3].toUpperCase());
             } catch (IllegalArgumentException e) {
-                player.sendMessage("Unknown side: " + args[3]);
+                messages.send(player, "unknown-side", "side", args[3]);
                 return;
             }
         } else {
@@ -285,7 +288,7 @@ public class AppearanceCommand implements CommandExecutor {
         for (Player p : Bukkit.getOnlinePlayers()) {
             viewService.update(p);
         }
-        player.sendMessage(face + " -> " + mat + ": " + added + " added, " + updated + " updated, " + skipped + " skipped");
+        messages.send(player, "set-result", "side", face.name(), "block", mat.name(), "added", String.valueOf(added), "updated", String.valueOf(updated), "skipped", String.valueOf(skipped));
     }
 
     private void handleWand(CommandSender sender, String[] args) {
@@ -293,11 +296,11 @@ public class AppearanceCommand implements CommandExecutor {
             return;
         }
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("This command is only for players");
+            messages.send(sender, "only-players");
             return;
         }
         player.getInventory().addItem(wand.createWand());
-        player.sendMessage("DBA-Wand added to your Inventory");
+        messages.send(player, "wand-given");
     }
 
     private void handleClear(CommandSender sender, String[] args) {
@@ -305,16 +308,16 @@ public class AppearanceCommand implements CommandExecutor {
             return;
         }
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("This command is only for players");
+            messages.send(sender, "only-players");
             return;
         }
         Selection sel = selectionManager.getSelection(player);
         if (!sel.isComplete()) {
-            player.sendMessage("Set pos1 and pos2 first");
+            messages.send(player, "selection-incomplete");
             return;
         }
         if (sel.getVolume() > maxBlocks) {
-            player.sendMessage("Selection too large (max. " + maxBlocks + " blocks)");
+            messages.send(player, "selection-too-large", "max", String.valueOf(maxBlocks));
             return;
         }
         List<BlockBackup> change = new ArrayList<>();
@@ -332,7 +335,7 @@ public class AppearanceCommand implements CommandExecutor {
         if (!change.isEmpty()) {
             undoManager.push(player, change);
         }
-        player.sendMessage(removed + " DBA blocks removed");
+        messages.send(player, "clear-result", "count", String.valueOf(removed));
     }
 
     private BlockBackup backup(Block block) {
@@ -349,7 +352,7 @@ public class AppearanceCommand implements CommandExecutor {
             return;
         }
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("This command is only for players");
+            messages.send(sender, "only-players");
             return;
         }
         int amount = 1;
@@ -357,11 +360,11 @@ public class AppearanceCommand implements CommandExecutor {
             try {
                 amount = Integer.parseInt(args[1]);
             } catch (NumberFormatException e) {
-                player.sendMessage("Not a number: " + args[1]);
+                messages.send(player, "undo-not-a-number", "input", args[1]);
                 return;
             }
             if (amount < 1) {
-                player.sendMessage("Amount must be at least 1");
+                messages.send(player, "undo-min");
                 return;
             }
         }
@@ -380,20 +383,20 @@ public class AppearanceCommand implements CommandExecutor {
             undone++;
         }
         if (undone == 0) {
-            player.sendMessage("Nothing to undo");
+            messages.send(player, "undo-nothing");
             return;
         }
         for (Player p : Bukkit.getOnlinePlayers()) {
             viewService.update(p);
         }
-        player.sendMessage(undone + " change(s) undone (" + blocks + " blocks)");
+        messages.send(player, "undo-result", "changes", String.valueOf(undone), "blocks", String.valueOf(blocks));
     }
 
     private boolean noPermission(CommandSender sender, String perm) {
         if (sender.hasPermission(perm)) {
             return false;
         }
-        sender.sendMessage("No permission");
+        messages.send(sender, "no-permission");
         return true;
     }
 }

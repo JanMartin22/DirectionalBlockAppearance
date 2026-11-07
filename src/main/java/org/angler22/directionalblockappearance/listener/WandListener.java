@@ -1,5 +1,6 @@
 package org.angler22.directionalblockappearance.listener;
 
+import org.angler22.directionalblockappearance.config.Messages;
 import org.angler22.directionalblockappearance.manager.SelectionManager;
 import org.angler22.directionalblockappearance.model.Selection;
 import org.angler22.directionalblockappearance.wand.Wand;
@@ -14,10 +15,12 @@ import org.bukkit.inventory.EquipmentSlot;
 public class WandListener implements Listener {
     private final Wand wand;
     private final SelectionManager selectionManager;
+    private final Messages messages;
 
-    public WandListener(Wand wand, SelectionManager selectionManager) {
+    public WandListener(Wand wand, SelectionManager selectionManager, Messages messages) {
         this.wand = wand;
         this.selectionManager = selectionManager;
+        this.messages = messages;
     }
 
     @EventHandler
@@ -42,10 +45,12 @@ public class WandListener implements Listener {
         Selection sel = selectionManager.getSelection(e.getPlayer());
         if(e.getAction() == Action.LEFT_CLICK_BLOCK){
             sel.setPos1(block);
-            e.getPlayer().sendMessage("pos1 set (" + block.getX() + ", " + block.getY() + ", " + block.getZ() + ")");
+            messages.send(e.getPlayer(), "pos-set", "pos", "pos1", "x", String.valueOf(block.getX()),
+                    "y", String.valueOf(block.getY()), "z", String.valueOf(block.getZ()));
         } else {
             sel.setPos2(block);
-            e.getPlayer().sendMessage("pos2 set (" + block.getX() + ", " + block.getY() + ", " + block.getZ() + ")");
+            messages.send(e.getPlayer(), "pos-set", "pos", "pos2", "x", String.valueOf(block.getX()),
+                    "y", String.valueOf(block.getY()), "z", String.valueOf(block.getZ()));
         }
     }
     @EventHandler

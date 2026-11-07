@@ -2,6 +2,7 @@ package org.angler22.directionalblockappearance;
 
 import org.angler22.directionalblockappearance.command.AppearanceCommand;
 import org.angler22.directionalblockappearance.command.AppearanceTabCompleter;
+import org.angler22.directionalblockappearance.config.Messages;
 import org.angler22.directionalblockappearance.listener.ProtectionListener;
 import org.angler22.directionalblockappearance.listener.ViewListener;
 import org.angler22.directionalblockappearance.listener.WandListener;
@@ -24,11 +25,13 @@ public final class DirectionalBlockAppearance extends JavaPlugin {
     private SelectionManager selectionManager;
     private Wand wand;
     private UndoManager undoManager;
+    private Messages messages;
 
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
+        messages = new Messages(this);
         manager = new AppearanceManager();
         storage = new YamlStorage(new File(getDataFolder(), "groups.yml"), getLogger());
         storage.loadAll(manager);
@@ -38,14 +41,14 @@ public final class DirectionalBlockAppearance extends JavaPlugin {
         wand = new Wand(this);
         undoManager = new UndoManager(getConfig().getInt("undo.max-steps", 15));
 
-        getServer().getPluginManager().registerEvents(new ProtectionListener(manager, viewService, this), this);
+        getServer().getPluginManager().registerEvents(new ProtectionListener(manager, viewService, this, messages), this);
 
         long resyncInterval = getConfig().getLong("view.resync-interval", 40);
         Bukkit.getScheduler().runTaskTimer(this, () -> viewService.resyncAll(), resyncInterval, resyncInterval);
 
         getServer().getPluginManager().registerEvents(new ViewListener(this, viewService), this);
 
-        getServer().getPluginManager().registerEvents(new WandListener(wand, selectionManager), this);
+        getServer().getPluginManager().registerEvents(new WandListener(wand, selectionManager, messages), this);
 
         getCommand("dba").setTabCompleter(new AppearanceTabCompleter(manager));
 
@@ -58,7 +61,7 @@ public final class DirectionalBlockAppearance extends JavaPlugin {
         }, autosaveInterval, autosaveInterval);
 
 
-        getCommand("dba").setExecutor(new AppearanceCommand(manager, viewService, selectionManager, wand, undoManager,
+        getCommand("dba").setExecutor(new AppearanceCommand(manager, viewService, selectionManager, wand, undoManager, messages,
                 getConfig().getInt("selection.range", 25),
                 getConfig().getInt("selection.max-blocks", 10000)));
 

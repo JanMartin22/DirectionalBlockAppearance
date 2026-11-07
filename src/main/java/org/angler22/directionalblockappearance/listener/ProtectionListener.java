@@ -1,5 +1,6 @@
 package org.angler22.directionalblockappearance.listener;
 
+import org.angler22.directionalblockappearance.config.Messages;
 import org.angler22.directionalblockappearance.manager.AppearanceManager;
 import org.angler22.directionalblockappearance.model.BlockKey;
 import org.angler22.directionalblockappearance.view.ViewService;
@@ -32,8 +33,9 @@ public class ProtectionListener implements Listener {
     private final boolean protectFire;
     private final boolean protectLiquids;
     private final boolean protectNature;
+    private final Messages messages;
 
-    public ProtectionListener(AppearanceManager manager, ViewService viewService, Plugin plugin) {
+    public ProtectionListener(AppearanceManager manager, ViewService viewService, Plugin plugin, Messages messages) {
         this.manager = manager;
         this.viewService = viewService;
         this.plugin = plugin;
@@ -45,6 +47,7 @@ public class ProtectionListener implements Listener {
         this.protectFire = plugin.getConfig().getBoolean("protection.fire", true);
         this.protectLiquids = plugin.getConfig().getBoolean("protection.liquids", true);
         this.protectNature = plugin.getConfig().getBoolean("protection.nature", true);
+        this.messages = messages;
     }
 
     private boolean isDba(Block block) {
@@ -78,13 +81,13 @@ public class ProtectionListener implements Listener {
         Player player = event.getPlayer();
         if (protectBreak && !player.hasPermission("dba.break")) {
             event.setCancelled(true);
-            player.sendMessage("This block is protected");
+            messages.send(player, "block-protected");
             Bukkit.getScheduler().runTask(plugin, () -> viewService.resync(player));
             return;
         }
         manager.removeBlock(key);
         viewService.forget(key);
-        player.sendMessage("DBA block removed");
+        messages.send(player, "block-removed");
     }
 
     @EventHandler(ignoreCancelled = true)

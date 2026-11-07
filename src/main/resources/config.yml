@@ -16,7 +16,7 @@ wand:
 storage:
   autosave-interval: 600  # Ticks between autosaves (600 = 30 s)
 
-protection:               # true = protected, false = allowed
+protection: # true = protected, false = allowed
   break: true             # Breaking (also requires permission dba.break)
   place: true             # Placing blocks/buckets on DBA positions
   pistons: true           # Pistons
@@ -25,3 +25,44 @@ protection:               # true = protected, false = allowed
   fire: true              # Burning
   liquids: true           # Water/lava, sponges
   nature: true            # Leaf decay, melting, growth
+
+messages: # &-color codes allowed, %placeholders% are filled in by the plugin
+  prefix: "&8[&3DBA&8] &r"
+  no-permission: "&cNo permission"
+  only-players: "&cThis command is only for players"
+  unknown-subcommand: "&cUnknown subcommand"
+  usage: "&7Usage: /dba <wand|pos1|pos2|set|quickset|clear|undo|group>"
+  usage-group: "&7Usage: /dba group <create|delete|list>"
+  usage-group-create: "&7Usage: /dba group create <name>"
+  usage-group-delete: "&7Usage: /dba group delete <name>"
+  usage-set: "&7Usage: /dba set <group> <block> [side]"
+  usage-quickset: "&7Usage: /dba quickset <group> <block>"
+
+  group-created: "&aGroup %group% created"
+  group-exists: "&cGroup %group% already exists"
+  group-not-found: "&cGroup %group% doesn't exist"
+  group-deleted: "&aGroup %group% deleted (%blocks% blocks)"
+  group-list-empty: "&7No groups"
+  group-list-entry: "&f%group% &7(%mode%, %blocks% blocks)"
+
+  look-at-block: "&cLook at a block (max. %range% blocks away)"
+  pos-set: "&a%pos% set &7(%x%, %y%, %z%)"
+  selection-incomplete: "&cSet pos1 and pos2 first"
+  selection-too-large: "&cSelection too large (max. %max% blocks)"
+  wand-given: "&aDBA wand added to your inventory"
+
+  unknown-block: "&cUnknown block: %block%"
+  unknown-side: "&cUnknown side: %side%"
+  set-result: "&a%side% -> %block%: &f%added% &aadded, &f%updated% &aupdated, &f%skipped% &askipped"
+  quickset-added: "&aBlock added to %group%: %side% -> %block%"
+  quickset-updated: "&aView updated: %side% -> %block%"
+  other-group: "&cBlock belongs to another group"
+  clear-result: "&a%count% DBA blocks removed"
+
+  undo-result: "&a%changes% change(s) undone &7(%blocks% blocks)"
+  undo-nothing: "&7Nothing to undo"
+  undo-not-a-number: "&cNot a number: %input%"
+  undo-min: "&cAmount must be at least 1"
+
+  block-protected: "&cThis block is protected"
+  block-removed: "&aDBA block removed"
