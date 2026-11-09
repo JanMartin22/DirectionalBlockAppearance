@@ -47,7 +47,11 @@ In `config.yml` you can change the view distance, the selection limits, the numb
 
 ## Compatibility
 
-Tested on Spigot 1.21.1, 1.21.11, 26.3 and Paper 1.21, 26.3. **Folia is not supported.**
+Tested on:
+- Spigot: 1.21.1, 1.21.11, 26.3
+- Paper: 1.21, 26.3
+
+Folia is not supported.
 
 ## Known issues
 
