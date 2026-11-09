@@ -3,6 +3,10 @@
 
 <p align="center">Make blocks look different depending on the side you view them from.</p>
 
+<p align="center">
+  <img src="media/dba.gif" alt="DBA in action">
+</p>
+
 ---
 
 DBA shows players **fake blocks** that only exist on their client. From the side you set, players see your chosen block. From any other side, they see the real block. Great for one-way windows, spectator boxes and walls that look different from each side. No client mods or resource packs needed.
