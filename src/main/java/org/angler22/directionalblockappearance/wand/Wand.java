@@ -10,10 +10,24 @@ import org.bukkit.plugin.Plugin;
 
 import java.util.List;
 
+/**
+ * The selection wand. Left click sets pos1, right click sets pos2.
+ * <p>
+ * The wand is recognized by a hidden tag in its item data
+ * (persistent data container), not by its name or material.
+ * So renaming the item does not break it, and a normal item
+ * of the same type is not treated as a wand.
+ */
 public class Wand {
     private final NamespacedKey key;
     private final Material material;
 
+    /**
+     * Creates the wand helper and reads the wand item from the config (wand.item).
+     * Falls back to a golden axe if the configured item is missing or invalid.
+     *
+     * @param plugin the plugin, used for the tag key and the config
+     */
     public Wand(Plugin plugin) {
         this.key = new NamespacedKey(plugin, "wand");
         Material m = Material.matchMaterial(plugin.getConfig().getString("wand.item", "GOLDEN_AXE"));
@@ -24,6 +38,11 @@ public class Wand {
         }
     }
 
+    /**
+     * Creates a new wand item with name, lore and the wand tag.
+     *
+     * @return a new wand item
+     */
     public ItemStack createWand() {
         ItemStack itemStack = new ItemStack(material);
         ItemMeta meta = itemStack.getItemMeta();
@@ -35,6 +54,12 @@ public class Wand {
         return itemStack;
     }
 
+    /**
+     * Checks if the given item is a DBA wand.
+     *
+     * @param item the item to check, may be null
+     * @return true if the item has the wand tag
+     */
     public boolean isWand(ItemStack item) {
         if (item == null || !item.hasItemMeta()) {
             return false;

@@ -18,6 +18,14 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 
+/**
+ * Main class of DirectionalBlockAppearance.
+ * <p>
+ * Creates all parts of the plugin on startup and connects them:
+ * groups and storage, the view service that sends the fake blocks,
+ * selection, wand, undo, listeners and the /dba command.
+ * It also starts two repeating tasks: the resync safety net and the autosave.
+ */
 public final class DirectionalBlockAppearance extends JavaPlugin {
     private AppearanceManager manager;
     private Storage storage;
@@ -27,7 +35,10 @@ public final class DirectionalBlockAppearance extends JavaPlugin {
     private UndoManager undoManager;
     private Messages messages;
 
-
+    /**
+     * Loads the config and all saved groups, then registers listeners,
+     * the command and the repeating tasks (resync and autosave).
+     */
     @Override
     public void onEnable() {
         saveDefaultConfig();
@@ -68,9 +79,16 @@ public final class DirectionalBlockAppearance extends JavaPlugin {
         getLogger().info("Enabled");
     }
 
+    /**
+     * Shows the real blocks to all players again and saves all groups.
+     */
     @Override
     public void onDisable() {
-        viewService.restoreAll();
-        storage.saveAll(manager);
+        if (viewService != null) {
+            viewService.restoreAll();
+        }
+        if (storage != null && manager != null) {
+            storage.saveAll(manager);
+        }
     }
 }

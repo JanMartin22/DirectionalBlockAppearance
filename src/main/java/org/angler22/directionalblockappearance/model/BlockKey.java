@@ -99,6 +99,8 @@ public final class BlockKey {
     }
 
     /**
+     * Returns the center of this block as a location.
+     *
      * @return the center of the block, or null if the world is not loaded
      */
     public Location toCenter(){

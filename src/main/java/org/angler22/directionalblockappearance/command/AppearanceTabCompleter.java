@@ -11,14 +11,41 @@ import org.bukkit.util.StringUtil;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Tab completion for /dba.
+ * <p>
+ * Suggests subcommands, group actions, existing group names,
+ * block types and sides, depending on the argument position.
+ * Only suggestions that start with what the player already typed are shown.
+ */
 public class AppearanceTabCompleter implements TabCompleter {
 
     private final AppearanceManager manager;
 
+    /**
+     * Creates the tab completer.
+     *
+     * @param manager used to suggest the names of existing groups
+     */
     public AppearanceTabCompleter(AppearanceManager manager) {
         this.manager = manager;
     }
 
+    /**
+     * Returns the suggestions for the argument the player is typing.
+     * <ul>
+     *   <li>1st argument: all subcommands</li>
+     *   <li>group: create, delete, list; after delete: group names</li>
+     *   <li>set / quickset: group names, then block types</li>
+     *   <li>set: the side as 4th argument</li>
+     * </ul>
+     *
+     * @param sender  who is typing the command
+     * @param command the command
+     * @param alias   the alias that was used
+     * @param args    the arguments typed so far
+     * @return the matching suggestions, empty if there are none
+     */
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
 

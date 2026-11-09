@@ -22,7 +22,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-
+/**
+ * Handles the /dba command and all its subcommands.
+ * <p>
+ * Every subcommand checks its own permission (dba.command.*) first.
+ * Changes to blocks are saved for /dba undo and then sent to all players.
+ */
 public class AppearanceCommand implements CommandExecutor {
 
     private final AppearanceManager manager;
@@ -34,8 +39,19 @@ public class AppearanceCommand implements CommandExecutor {
     private final int maxBlocks;
     private final Messages messages;
 
-
-    public AppearanceCommand(AppearanceManager manager, ViewService viewService, SelectionManager selectionManager, Wand wand, UndoManager undoManager, Messages messages,  int selectionRange, int maxBlocks) {
+    /**
+     * Creates the command handler.
+     *
+     * @param manager          holds all groups and blocks
+     * @param viewService      sends fake and real blocks to the players
+     * @param selectionManager stores the selections of the players
+     * @param wand             creates the selection wand
+     * @param undoManager      stores the changes for /dba undo
+     * @param messages         used for all chat messages
+     * @param selectionRange   the maximum distance for pos1, pos2 and quickset (selection.range)
+     * @param maxBlocks        the maximum selection size for set and clear (selection.max-blocks)
+     */
+    public AppearanceCommand(AppearanceManager manager, ViewService viewService, SelectionManager selectionManager, Wand wand, UndoManager undoManager, Messages messages, int selectionRange, int maxBlocks) {
         this.manager = manager;
         this.viewService = viewService;
         this.selectionManager = selectionManager;
@@ -46,6 +62,15 @@ public class AppearanceCommand implements CommandExecutor {
         this.messages = messages;
     }
 
+    /**
+     * Passes the command on to the matching subcommand.
+     *
+     * @param sender  who used the command
+     * @param command the command
+     * @param label   the alias that was used
+     * @param args    the arguments of the command
+     * @return always true, because all usage messages are sent by the plugin itself
+     */
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0) {
@@ -74,6 +99,12 @@ public class AppearanceCommand implements CommandExecutor {
         return true;
     }
 
+    /**
+     * Handles /dba group list, create and delete.
+     *
+     * @param sender who used the command
+     * @param args   the arguments of the command
+     */
     private void handleGroup(CommandSender sender, String[] args) {
         if (args.length < 2) {
             messages.send(sender, "usage-group");
@@ -94,10 +125,17 @@ public class AppearanceCommand implements CommandExecutor {
             handleCreate(sender, args);
         } else if (args[1].equalsIgnoreCase("delete")) {
             handleDelete(sender, args);
+        } else {
+            messages.send(sender, "usage-group");
         }
     }
 
-
+    /**
+     * Handles /dba group create &lt;name&gt;. New groups are always two-sided.
+     *
+     * @param sender who used the command
+     * @param args   the arguments of the command
+     */
     private void handleCreate(CommandSender sender, String[] args) {
         if (noPermission(sender, "dba.command.group.create")) {
             return;
@@ -114,6 +152,13 @@ public class AppearanceCommand implements CommandExecutor {
         messages.send(sender, "group-created", "group", args[2]);
     }
 
+    /**
+     * Handles /dba group delete &lt;name&gt;.
+     * Deletes the group and shows the real blocks to all players again.
+     *
+     * @param sender who used the command
+     * @param args   the arguments of the command
+     */
     private void handleDelete(CommandSender sender, String[] args) {
         if (noPermission(sender, "dba.command.group.delete")) {
             return;
@@ -133,6 +178,13 @@ public class AppearanceCommand implements CommandExecutor {
         messages.send(sender, "group-deleted", "group", args[2], "blocks", String.valueOf(group.getBlocks().size()));
     }
 
+    /**
+     * Handles /dba pos1 and /dba pos2.
+     * Sets the corner to the block the player is looking at.
+     *
+     * @param sender who used the command
+     * @param args   the arguments of the command
+     */
     private void handlePosition(CommandSender sender, String[] args) {
         if (noPermission(sender, "dba.command.pos")) {
             return;
@@ -158,6 +210,13 @@ public class AppearanceCommand implements CommandExecutor {
         messages.send(player, "pos-set", "pos", args[0].toLowerCase(), "x", String.valueOf(block.getX()), "y", String.valueOf(block.getY()), "z", String.valueOf(block.getZ()));
     }
 
+    /**
+     * Handles /dba quickset &lt;group&gt; &lt;block&gt;.
+     * Sets the fake block on the side of the block the player is looking at.
+     *
+     * @param sender who used the command
+     * @param args   the arguments of the command
+     */
     private void handleQuickset(CommandSender sender, String[] args) {
         if (noPermission(sender, "dba.command.quickset")) {
             return;
@@ -203,6 +262,16 @@ public class AppearanceCommand implements CommandExecutor {
         }
     }
 
+    /**
+     * Sets a view on a block, depending on whether it is already a DBA block.
+     *
+     * @param group the group the block should belong to
+     * @param block the block to change
+     * @param face  the side that shows the fake block
+     * @param data  the fake block
+     * @return ADDED if the block was new, UPDATED if its view was replaced,
+     * SKIPPED if it belongs to another group
+     */
     private SetResult applyView(ViewGroup group, Block block, BlockFace face, BlockData data) {
         ViewBlock existing = manager.getBlock(new BlockKey(block));
         if (existing == null) {
@@ -216,6 +285,14 @@ public class AppearanceCommand implements CommandExecutor {
         }
     }
 
+    /**
+     * Handles /dba set &lt;group&gt; &lt;block&gt; [side].
+     * Sets the fake block for every non-air block in the selection.
+     * Without a side, the side facing the player is used.
+     *
+     * @param sender who used the command
+     * @param args   the arguments of the command
+     */
     private void handleSet(CommandSender sender, String[] args) {
         if (noPermission(sender, "dba.command.set")) {
             return;
@@ -225,7 +302,7 @@ public class AppearanceCommand implements CommandExecutor {
             return;
         }
         if (args.length < 3) {
-            messages.send(player,"usage-set");
+            messages.send(player, "usage-set");
             return;
         }
         ViewGroup group = manager.getGroup(args[1]);
@@ -254,6 +331,11 @@ public class AppearanceCommand implements CommandExecutor {
             try {
                 face = BlockFace.valueOf(args[3].toUpperCase());
             } catch (IllegalArgumentException e) {
+                messages.send(player, "unknown-side", "side", args[3]);
+                return;
+            }
+            if (face != BlockFace.NORTH && face != BlockFace.SOUTH && face != BlockFace.EAST
+                    && face != BlockFace.WEST && face != BlockFace.UP && face != BlockFace.DOWN) {
                 messages.send(player, "unknown-side", "side", args[3]);
                 return;
             }
@@ -291,6 +373,12 @@ public class AppearanceCommand implements CommandExecutor {
         messages.send(player, "set-result", "side", face.name(), "block", mat.name(), "added", String.valueOf(added), "updated", String.valueOf(updated), "skipped", String.valueOf(skipped));
     }
 
+    /**
+     * Handles /dba wand. Gives the player a selection wand.
+     *
+     * @param sender who used the command
+     * @param args   the arguments of the command
+     */
     private void handleWand(CommandSender sender, String[] args) {
         if (noPermission(sender, "dba.command.wand")) {
             return;
@@ -303,6 +391,13 @@ public class AppearanceCommand implements CommandExecutor {
         messages.send(player, "wand-given");
     }
 
+    /**
+     * Handles /dba clear.
+     * Removes all DBA blocks in the selection and shows the real blocks again.
+     *
+     * @param sender who used the command
+     * @param args   the arguments of the command
+     */
     private void handleClear(CommandSender sender, String[] args) {
         if (noPermission(sender, "dba.command.clear")) {
             return;
@@ -338,6 +433,12 @@ public class AppearanceCommand implements CommandExecutor {
         messages.send(player, "clear-result", "count", String.valueOf(removed));
     }
 
+    /**
+     * Saves the current state of a block for undo.
+     *
+     * @param block the block to save
+     * @return the saved state; group name null if the block is not a DBA block
+     */
     private BlockBackup backup(Block block) {
         BlockKey key = new BlockKey(block);
         ViewBlock existing = manager.getBlock(key);
@@ -347,6 +448,12 @@ public class AppearanceCommand implements CommandExecutor {
         return new BlockBackup(key, existing.getGroup().getName(), existing.getViews());
     }
 
+    /**
+     * Handles /dba undo [amount]. Undoes the last changes of the player.
+     *
+     * @param sender who used the command
+     * @param args   the arguments of the command
+     */
     private void handleUndo(CommandSender sender, String[] args) {
         if (noPermission(sender, "dba.command.undo")) {
             return;
@@ -392,6 +499,13 @@ public class AppearanceCommand implements CommandExecutor {
         messages.send(player, "undo-result", "changes", String.valueOf(undone), "blocks", String.valueOf(blocks));
     }
 
+    /**
+     * Checks the permission and sends the no-permission message if it is missing.
+     *
+     * @param sender who used the command
+     * @param perm   the permission to check
+     * @return true if the sender does not have the permission
+     */
     private boolean noPermission(CommandSender sender, String perm) {
         if (sender.hasPermission(perm)) {
             return false;

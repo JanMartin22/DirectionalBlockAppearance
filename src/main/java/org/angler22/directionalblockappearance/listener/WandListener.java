@@ -12,17 +12,36 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.EquipmentSlot;
 
+/**
+ * Handles clicks with the selection wand.
+ * Left click on a block sets pos1, right click sets pos2.
+ * Also removes the selection of a player when they leave.
+ */
 public class WandListener implements Listener {
     private final Wand wand;
     private final SelectionManager selectionManager;
     private final Messages messages;
 
+    /**
+     * Creates the wand listener.
+     *
+     * @param wand             used to check if an item is the wand
+     * @param selectionManager stores the selections of the players
+     * @param messages         used for the pos-set message
+     */
     public WandListener(Wand wand, SelectionManager selectionManager, Messages messages) {
         this.wand = wand;
         this.selectionManager = selectionManager;
         this.messages = messages;
     }
 
+    /**
+     * Sets pos1 or pos2 when a player clicks a block with the wand.
+     * The click is cancelled, so the block is not broken or used.
+     * Players without dba.command.pos use the wand like a normal item.
+     *
+     * @param e the interact event
+     */
     @EventHandler
     public void onInteract(PlayerInteractEvent e){
         if(e.getHand() != EquipmentSlot.HAND){
@@ -53,6 +72,12 @@ public class WandListener implements Listener {
                     "y", String.valueOf(block.getY()), "z", String.valueOf(block.getZ()));
         }
     }
+
+    /**
+     * Removes the selection of the player who leaves.
+     *
+     * @param e the quit event
+     */
     @EventHandler
     public void onQuit(PlayerQuitEvent e) {
         selectionManager.clear(e.getPlayer());
