@@ -20,7 +20,7 @@ Put the jar into your `plugins` folder and restart. In a BungeeCord or Velocity 
 /dba set windows glass         (stand on the side that should see the glass)
 ```
 
-Walk to the other side and you see the real block. Made a mistake? `/dba undo`.
+Walk to the other side and you see the real block. Made a mistake?. `/dba undo`.
 
 ## Commands
 
