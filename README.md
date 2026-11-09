@@ -1,49 +1,64 @@
-# DirectionalBlockAppearance
-Work in progress 
 
-Make blocks look different depending on the side they're viewed from.
-Perfect for one-way glass, secret doors and creative builds.
+<h1 align="center">DirectionalBlockAppearance</h1>
 
-## How it works
+<p align="center">Make blocks look different depending on the side you view them from.</p>
 
-Each player gets their own client-side "fake" blocks. The plugin checks which side of a block a player is standing on and shows them the matching block. The real block on the server stays untouched.
+---
 
-Example: a window that looks like **glass from the inside** and like **stone from the outside**.
+DBA shows players **fake blocks** that only exist on their client. From the side you set, players see your chosen block. From any other side, they see the real block. Great for one-way windows, spectator boxes and walls that look different from each side. No client mods or resource packs needed.
+## Installation
 
-No resource pack, no client mod required.
+Requires Spigot or Paper **1.21+** and **Java 21**.
 
-## Requirements
+Put the jar into your `plugins` folder and restart. In a BungeeCord or Velocity network, install DBA on the **backend servers**, not on the proxy.
 
-- Spigot or Paper **1.21+**
-- Java 21+
+## Quick start
+
+```
+/dba group create windows
+/dba wand                      (left click = pos1, right click = pos2)
+/dba set windows glass         (stand on the side that should see the glass)
+```
+
+Walk to the other side and you see the real block. Made a mistake? `/dba undo`.
 
 ## Commands
 
 | Command | Description | Permission |
 |---|---|---|
-| `/dba wand` | Gives you the selection wand (left click: pos1, right click: pos2) | `dba.command.wand` |
-| `/dba pos1` / `/dba pos2` | Sets a selection corner to the block you're looking at | `dba.command.pos` |
-| `/dba set <group> <block> [side]` | Sets one side of all blocks in your selection. Without a side, the side facing you is used | `dba.command.set` |
-| `/dba quickset <group> <block>` | Sets the side you're looking at, only for that one block | `dba.command.quickset` |
-| `/dba clear` | Removes all DBA blocks in your selection | `dba.command.clear` |
-| `/dba undo [amount]` | Undoes your last changes (up to 15) | `dba.command.undo` |
-| `/dba group create <name>` | Creates a new group | `dba.command.group.create` |
-| `/dba group delete <name>` | Deletes a group and all its blocks (cannot be undone) | `dba.command.group.delete` |
-| `/dba group list` | Lists all groups with their block count | `dba.command.group.list` |
+| `/dba group create <name>` | Create a group | `dba.command.group.create` |
+| `/dba group delete <name>` | Delete a group and its blocks | `dba.command.group.delete` |
+| `/dba group list` | List all groups | `dba.command.group.list` |
+| `/dba pos1` / `/dba pos2` | Set a selection corner | `dba.command.pos` |
+| `/dba wand` | Get the selection wand | `dba.command.wand` |
+| `/dba set <group> <block> [side]` | Set the fake block for your whole selection | `dba.command.set` |
+| `/dba quickset <group> <block>` | Set the fake block on the side you are looking at | `dba.command.quickset` |
+| `/dba clear` | Remove all DBA blocks in your selection | `dba.command.clear` |
+| `/dba undo [amount]` | Undo your last changes | `dba.command.undo` |
 
-Blocks that already belong to another group are skipped by `set` and `quickset`.
+**Other permissions:**
 
-## Permissions
+- `dba.admin` gives all permissions (default: op).
+- `dba.break` lets a player break protected DBA blocks.
 
-| Permission | Allows | Default |
-|---|---|---|
-| `dba.admin` | Everything below | op |
-| `dba.command.<subcommand>` | The matching command (see table above) | op |
-| `dba.command.pos` | Also selecting with the wand | op |
-| `dba.break` | Breaking DBA blocks | op |
+## Configuration
 
-Without `dba.break`, DBA blocks are protected from players. They are always protected from pistons, explosions, fire spreading and mobs.
+In `config.yml` you can change the view distance, the selection limits, the number of undo steps, the wand item and all messages. You can also turn off each protection (breaking, placing, pistons, explosions, fire, liquids, entities, nature).
 
-## License
+## Compatibility
 
-See [LICENSE](LICENSE).
+Tested on:
+- Spigot: 1.21.1, 1.21.11, 26.3
+- Paper: 1.21, 26.3
+
+Folia is not supported.
+
+## Known issues
+
+**Fixed in the next update:**
+- Blocks that need support, like bamboo, can leave a ghost block behind.
+- The "protected" message appears with a delay when mining a DBA block.
+
+**By design / limitations:**
+- Mining time and drops are those of the real block.
+- When a protected placement or piston is blocked, the real block may flash briefly.
