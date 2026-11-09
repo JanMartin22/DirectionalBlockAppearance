@@ -53,6 +53,30 @@ Tested on:
 
 Folia is not supported.
 
+## Performance
+
+Measured with [spark](https://spark.lucko.me/) on a local test server:
+
+| Setup | |
+|---|---|
+| Server | Paper 26.3 |
+| Players | 1 |
+| DBA blocks | 13,012 in one group |
+| Config | default (view distance 48, resync every 40 ticks, autosave every 600 ticks) |
+| Duration | 2 minutes, walking, jumping and teleporting right next to the blocks |
+
+| Result | |
+|---|---|
+| TPS | 20.00 |
+| MSPT (median / 95th percentile) | 2.91 ms / 5.81 ms |
+| DBA share of the server thread | 2.42 % |
+| ... of that: player movement updates | 2.04 % |
+| ... of that: autosave | 0.31 % |
+| ... of that: resync safety net | 0.06 % |
+
+This is a worst case for a single group: the player stands directly next to
+all 13,000 blocks the whole time. Smaller groups, or groups far away from players, cost less.
+
 ## Known issues
 
 **Fixed in the next update:**
