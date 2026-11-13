@@ -20,6 +20,7 @@ import org.bukkit.util.RayTraceResult;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -144,12 +145,17 @@ public class AppearanceCommand implements CommandExecutor {
             messages.send(sender, "usage-group-create");
             return;
         }
-        ViewGroup group = manager.createGroup(args[2], ViewMode.TWO_SIDED);
-        if (group == null) {
-            messages.send(sender, "group-exists", "group", args[2]);
+        String lowerName = args[2].toLowerCase(Locale.ROOT);
+        if (!lowerName.matches("[a-z0-9_-]+")) {
+            messages.send(sender, "invalid-group-name");
             return;
         }
-        messages.send(sender, "group-created", "group", args[2]);
+        ViewGroup group = manager.createGroup(lowerName, ViewMode.TWO_SIDED);
+        if (group == null) {
+            messages.send(sender, "group-exists", "group", lowerName);
+            return;
+        }
+        messages.send(sender, "group-created", "group", lowerName);
     }
 
     /**

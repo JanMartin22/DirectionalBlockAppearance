@@ -27,31 +27,33 @@ public class AppearanceManager {
     private boolean changed = false;
 
     /**
-     * Creates a new empty group. Group names are case-sensitive.
+     * Creates a new empty group. The name is stored in lower case,
+     * so "Test" and "test" are the same group.
      *
      * @param name the name of the group
      * @param mode how the blocks of the group decide which view to show
      * @return the new group, or null if a group with this name already exists
      */
     public ViewGroup createGroup(String name, ViewMode mode) {
-        if (groups.containsKey(name)) {
+        String lowerName = name.toLowerCase(Locale.ROOT);
+        if (groups.containsKey(lowerName)) {
             return null;
         } else {
-            ViewGroup vg = new ViewGroup(name, mode);
-            groups.put(name, vg);
+            ViewGroup vg = new ViewGroup(lowerName, mode);
+            groups.put(lowerName, vg);
             changed = true;
             return vg;
         }
     }
 
     /**
-     * Returns the group with the given name.
+     * Returns the group with the given name, ignoring upper and lower case.
      *
      * @param name the name of the group
      * @return the group, or null if it does not exist
      */
     public ViewGroup getGroup(String name) {
-        return groups.get(name);
+        return groups.get(name.toLowerCase(Locale.ROOT));
     }
 
     /**
@@ -156,7 +158,7 @@ public class AppearanceManager {
      * @param group the group to add the block to
      * @param key   the position of the block
      * @return the new DBA block, or null if this position is already a DBA block
-     *         or the group is not managed by this manager
+     * or the group is not managed by this manager
      */
     public ViewBlock addBlock(ViewGroup group, BlockKey key) {
         if (groups.get(group.getName()) != group) {
@@ -190,14 +192,15 @@ public class AppearanceManager {
     }
 
     /**
-     * Deletes a group and all its blocks.
+     * Deletes the group with the given name, ignoring upper and lower case,
+     * and all its blocks.
      * Does not send the real blocks to the players, the caller has to do that.
      *
      * @param name the name of the group
      * @return the deleted group, or null if it does not exist
      */
     public ViewGroup deleteGroup(String name) {
-        ViewGroup group = groups.remove(name);
+        ViewGroup group = groups.remove(name.toLowerCase(Locale.ROOT));
         if (group == null) {
             return null;
         }
