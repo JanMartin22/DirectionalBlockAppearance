@@ -294,7 +294,9 @@ public class AppearanceCommand implements CommandExecutor {
     /**
      * Handles /dba set &lt;group&gt; &lt;block&gt; [side].
      * Sets the fake block for every non-air block in the selection.
-     * Without a side, the side facing the player is used.
+     * Without a side, the side facing the player is used. If the selection
+     * is one block high or the player looks steeply up or down, a hint
+     * suggests adding up or down.
      *
      * @param sender who used the command
      * @param args   the arguments of the command
@@ -333,6 +335,7 @@ public class AppearanceCommand implements CommandExecutor {
         }
 
         BlockFace face;
+        boolean sideGiven = args.length >= 4;
         if (args.length >= 4) {
             try {
                 face = BlockFace.valueOf(args[3].toUpperCase());
@@ -377,6 +380,13 @@ public class AppearanceCommand implements CommandExecutor {
             viewService.update(p);
         }
         messages.send(player, "set-result", "side", face.name(), "block", mat.name(), "added", String.valueOf(added), "updated", String.valueOf(updated), "skipped", String.valueOf(skipped));
+        if(!sideGiven){
+            int height = Math.abs(sel.getPos1().getY() - sel.getPos2().getY()) + 1;
+            float pitch = player.getLocation().getPitch();
+            if(height == 1 || pitch > 45 || pitch < -45){
+                messages.send(player, "set-hint");
+            }
+        }
     }
 
     /**

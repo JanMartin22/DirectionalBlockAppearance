@@ -67,3 +67,4 @@ messages: # &-color codes allowed, %placeholders% are filled in by the plugin
 
   block-protected: "&cThis block is protected"
   block-removed: "&aDBA block removed"
+  set-hint: "&7Tip: Add a side for floors and ceilings, e.g. &f/dba set <group> <block> up &7or &fdown"
