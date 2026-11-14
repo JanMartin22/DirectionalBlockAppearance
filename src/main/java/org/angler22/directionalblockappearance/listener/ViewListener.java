@@ -36,7 +36,7 @@ public class ViewListener implements Listener {
     }
 
     /**
-     * Updates the view when the player moves to another block.
+     * Updates the view when the player's eyes move into another block.
      * Small movements inside the same block and only turning the head are ignored.
      *
      * @param e the move event
@@ -49,7 +49,12 @@ public class ViewListener implements Listener {
         if(to == null){
             return;
         }
-        if(to.getBlockX() == from.getBlockX() && to.getBlockY() == from.getBlockY() && to.getBlockZ() == from.getBlockZ()){
+
+        double eyeHeight = e.getPlayer().getEyeHeight();
+        int fromEyeY = (int) Math.floor(from.getY() + eyeHeight);
+        int toEyeY = (int) Math.floor(to.getY() + eyeHeight);
+
+        if(to.getBlockX() == from.getBlockX() && toEyeY == fromEyeY && to.getBlockZ() == from.getBlockZ()){
             return;
         }
         viewService.update(e.getPlayer());
