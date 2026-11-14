@@ -425,7 +425,28 @@ public class ProtectionListener implements Listener {
      * @param event the fluid level change event
      */
     @EventHandler(ignoreCancelled = true)
-    public void onFluidChange(FluidLevelChangeEvent event) {
-        protect(event, event.getBlock(), protectLiquids);
+    public void onFluidChange(FluidLevelChangeEvent e) {
+        protect(e, e.getBlock(), protectLiquids);
+    }
+
+    /**
+     * Shows the protected message as soon as a player starts mining a protected
+     * DBA block and stops the mining (protection.break).
+     * Players with dba.break mine normally; the DBA entry is removed in onBreak.
+     *
+     * @param e the damage event
+     */
+    @EventHandler(ignoreCancelled = true)
+    public void onDamage(BlockDamageEvent e){
+        BlockKey key = new BlockKey(e.getBlock());
+        if (manager.getBlock(key) == null) {
+            return;
+        }
+        Player player = e.getPlayer();
+        if (protectBreak && !player.hasPermission("dba.break")) {
+            e.setCancelled(true);
+            messages.send(player, "block-protected");
+            Bukkit.getScheduler().runTask(plugin, () -> viewService.resync(player));
+        }
     }
 }

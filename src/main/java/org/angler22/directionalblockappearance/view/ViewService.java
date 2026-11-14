@@ -49,6 +49,8 @@ public final class ViewService {
     /**
      * Updates all DBA blocks near the player.
      * Only sends blocks whose view changed since the last update.
+     * DBA blocks whose real block has become air (for example bamboo that broke
+     * because the block below was removed) are removed from their group.
      *
      * @param player the player to update
      */
@@ -62,6 +64,15 @@ public final class ViewService {
         Location eye = player.getEyeLocation();
 
         for (ViewBlock vb : manager.getNearby(player.getLocation(), radius)) {
+            BlockData real = vb.getRealBlock();
+            if (real == null) {
+                continue;
+            }
+            if (real.getMaterial().isAir()) {
+                manager.removeBlock(vb.getKey());
+                restore(vb.getKey());
+                continue;
+            }
             ViewResolver resolver = resolvers.get(vb.getGroup().getMode());
             if (resolver == null) {
                 continue;
