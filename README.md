@@ -1,4 +1,3 @@
-
 <h1 align="center">DirectionalBlockAppearance</h1>
 
 <p align="center">Make blocks look different depending on the side you view them from.</p>
@@ -10,6 +9,7 @@
 ---
 
 DBA shows players **fake blocks** that only exist on their client. From the side you set, players see your chosen block. From any other side, they see the real block. Great for one-way windows, spectator boxes and walls that look different from each side. No client mods or resource packs needed.
+
 ## Installation
 
 Requires Spigot or Paper **1.21+** and **Java 21**.
@@ -26,11 +26,13 @@ Put the jar into your `plugins` folder and restart. In a BungeeCord or Velocity 
 
 Made a mistake? `/dba undo`.
 
+For floors and ceilings, add the side: `/dba set windows glass up` (or `down`).
+
 ## Commands
 
 | Command | Description | Permission |
 |---|---|---|
-| `/dba group create <name>` | Create a group | `dba.command.group.create` |
+| `/dba group create <name>` | Create a group (letters, numbers, `_` and `-`) | `dba.command.group.create` |
 | `/dba group delete <name>` | Delete a group and its blocks | `dba.command.group.delete` |
 | `/dba group list` | List all groups | `dba.command.group.list` |
 | `/dba pos1` / `/dba pos2` | Set a selection corner | `dba.command.pos` |
@@ -78,15 +80,11 @@ Measured with [spark](https://spark.lucko.me/) on a local test server:
 | ... of that: autosave | 0.31 % |
 | ... of that: resync safety net | 0.06 % |
 
-This is a worst case for a single group: the player stands directly next to
-all 13,000 blocks the whole time. Smaller groups, or groups far away from players, cost less.
+This is a worst case for a single group: the player stands directly next to all 13,000 blocks the whole time. Smaller groups, or groups far away from players, cost less.
 
 ## Known issues
 
-**Fixed in the next update:**
-- Blocks that need support, like bamboo, can leave a ghost block behind.
-- The "protected" message appears with a delay when mining a DBA block.
-
 **By design / limitations:**
 - Mining time and drops are those of the real block.
-- When a protected placement or piston is blocked, the real block may flash briefly.
+- Fake blocks only change what players see. Clicking and collision still use the real block: a door behind fake glass can still be opened (and only walked through from the door side), and some right-click actions like carving a pumpkin can change the real block.
+- When a protected placement, piston or click is blocked, the real block may flash briefly (a little longer on Paper).
