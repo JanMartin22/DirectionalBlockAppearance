@@ -144,6 +144,8 @@ public final class YamlStorage implements Storage {
 
             ViewGroup group = manager.createGroup(name, mode);
             if (group == null) {
+                logger.warning("Could not load group " + name + ": a group with the same name already exists");
+                hadErrors = true;
                 continue;
             }
 

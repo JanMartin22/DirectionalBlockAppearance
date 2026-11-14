@@ -20,7 +20,7 @@ import java.util.UUID;
  * (sentViews). On an update, only blocks whose view changed are sent again.
  * <p>
  * As a safety net, {@link #resyncAll()} runs regularly (view.resync-interval)
- * and sends all nearby blocks again, even if nothing changed. This fixes
+ * and sends all nearby fake blocks again, even if nothing changed. This fixes
  * fake blocks the client lost in situations the plugin does not catch.
  * <p>
  * Which view a player sees is decided by the {@link ViewResolver}
@@ -48,11 +48,15 @@ public final class ViewService {
 
     /**
      * Updates all DBA blocks near the player.
-     * Only sends blocks whose view changed since the last update.
+     * Only sends blocks whose view changed since the last update. Players on the
+     * real side get nothing sent, unless they saw a fake block there before.
+     * DBA blocks whose real block has become air (for example bamboo that broke
+     * because the block below was removed) are removed from their group.
      *
-     * @param player the player to update
+     * @param player the player whose view should be updated
+     * @param force true to resend every nearby fake block
      */
-    public void update(Player player) {
+    public void update(Player player, boolean force) {
         Map<BlockKey, BlockData> playerViews = sentViews.get(player.getUniqueId());
         if (playerViews == null) {
             playerViews = new HashMap<>();
@@ -62,16 +66,32 @@ public final class ViewService {
         Location eye = player.getEyeLocation();
 
         for (ViewBlock vb : manager.getNearby(player.getLocation(), radius)) {
+            BlockData real = vb.getRealBlock();
+            if (real == null) {
+                continue;
+            }
+            if (real.getMaterial().isAir()) {
+                manager.removeBlock(vb.getKey());
+                restore(vb.getKey());
+                continue;
+            }
             ViewResolver resolver = resolvers.get(vb.getGroup().getMode());
             if (resolver == null) {
                 continue;
             }
             BlockData data = resolver.resolve(vb, eye);
             if (data == null) {
+                if(playerViews.containsKey(vb.getKey())){
+                    Location loc = vb.getKey().toCenter();
+                    if (loc != null) {
+                        player.sendBlockChange(loc, real);
+                    }
+                    playerViews.remove(vb.getKey());
+                }
                 continue;
             }
 
-            if (data.equals(playerViews.get(vb.getKey()))) {
+            if (!force && data.equals(playerViews.get(vb.getKey()))) {
                 continue;
             }
 
@@ -110,15 +130,14 @@ public final class ViewService {
 
 
     /**
-     * Forgets what was sent to the player and sends all nearby blocks again.
-     * Fixes fake blocks the client lost, for example after a teleport
-     * or after the server sent the real block.
+     * Sends all nearby fake blocks again, even if they did not change.
+     * Fixes fake blocks the client lost, for example after a teleport.
+     * The cache is kept, so blocks outside the radius can still be restored later.
      *
      * @param player the player to resync
      */
     public void resync(Player player) {
-        sentViews.remove(player.getUniqueId());
-        update(player);
+        update(player, true);
     }
 
 

@@ -11,11 +11,11 @@ import org.bukkit.block.data.BlockData;
  */
 public interface ViewResolver {
     /**
-     * Returns the block a player sees from the given eye position.
+     * Returns the fake block a player sees from the given eye position.
      *
      * @param block the DBA block to look at
      * @param eye   the eye position of the player
-     * @return the fake block or the real block, or null if the world is not loaded
+     * @return the fake block to show, or null if the real block should be shown
      */
     BlockData resolve(ViewBlock block, Location eye);
 }

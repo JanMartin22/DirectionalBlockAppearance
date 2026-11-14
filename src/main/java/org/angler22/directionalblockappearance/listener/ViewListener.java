@@ -3,17 +3,19 @@ package org.angler22.directionalblockappearance.listener;
 import org.angler22.directionalblockappearance.view.ViewService;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.*;
+import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.plugin.Plugin;
 
 /**
  * Keeps the fake blocks of each player up to date.
  * <p>
- * Updates the view when a player moves to another block, and resends
- * all nearby fake blocks after a teleport, respawn or world change,
+ * Updates the view when a player or the vehicle they ride moves to another block,
+ * and resends all nearby fake blocks after a teleport, respawn or world change,
  * because the client may have lost them. The resend is delayed
  * (view.teleport-delay) so the client has loaded the new chunks first.
  */
@@ -36,7 +38,7 @@ public class ViewListener implements Listener {
     }
 
     /**
-     * Updates the view when the player moves to another block.
+     * Updates the view when the player's eyes move into another block.
      * Small movements inside the same block and only turning the head are ignored.
      *
      * @param e the move event
@@ -49,10 +51,15 @@ public class ViewListener implements Listener {
         if(to == null){
             return;
         }
-        if(to.getBlockX() == from.getBlockX() && to.getBlockY() == from.getBlockY() && to.getBlockZ() == from.getBlockZ()){
+
+        double eyeHeight = e.getPlayer().getEyeHeight();
+        int fromEyeY = (int) Math.floor(from.getY() + eyeHeight);
+        int toEyeY = (int) Math.floor(to.getY() + eyeHeight);
+
+        if(to.getBlockX() == from.getBlockX() && toEyeY == fromEyeY && to.getBlockZ() == from.getBlockZ()){
             return;
         }
-        viewService.update(e.getPlayer());
+        viewService.update(e.getPlayer(), false);
     }
 
     /**
@@ -64,7 +71,7 @@ public class ViewListener implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent e){
         Player player = e.getPlayer();
-        Bukkit.getScheduler().runTask(plugin, () -> viewService.update(player));
+        Bukkit.getScheduler().runTask(plugin, () -> viewService.update(player, false));
     }
 
     /**
@@ -100,14 +107,38 @@ public class ViewListener implements Listener {
     }
 
     /**
-     * Resends all nearby fake blocks after a world change.
+     * Clears what was sent to the player and resends all nearby fake blocks
+     * after a world change. The client drops the old world completely,
+     * so nothing from there needs to be restored.
      *
      * @param event the world change event
      */
     @EventHandler
     public void onWorldChange(PlayerChangedWorldEvent event) {
         Player player = event.getPlayer();
+        viewService.clear(player);
         Bukkit.getScheduler().runTaskLater(plugin, () -> viewService.resync(player), teleportDelay);
+    }
+
+    /**
+     * Updates the view of all players in a vehicle (minecart, boat, ...)
+     * when the vehicle moves to another block.
+     * Players in vehicles do not trigger a player move event.
+     *
+     * @param event the vehicle move event
+     */
+    @EventHandler
+    public void onVehicleMove(VehicleMoveEvent event) {
+        Location from = event.getFrom();
+        Location to = event.getTo();
+        if (to.getBlockX() == from.getBlockX() && to.getBlockY() == from.getBlockY() && to.getBlockZ() == from.getBlockZ()) {
+            return;
+        }
+        for (Entity passenger : event.getVehicle().getPassengers()) {
+            if (passenger instanceof Player player) {
+                viewService.update(player, false);
+            }
+        }
     }
 }
 

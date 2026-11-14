@@ -20,6 +20,7 @@ import org.bukkit.util.RayTraceResult;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -144,12 +145,17 @@ public class AppearanceCommand implements CommandExecutor {
             messages.send(sender, "usage-group-create");
             return;
         }
-        ViewGroup group = manager.createGroup(args[2], ViewMode.TWO_SIDED);
-        if (group == null) {
-            messages.send(sender, "group-exists", "group", args[2]);
+        String lowerName = args[2].toLowerCase(Locale.ROOT);
+        if (!lowerName.matches("[a-z0-9_-]+")) {
+            messages.send(sender, "invalid-group-name");
             return;
         }
-        messages.send(sender, "group-created", "group", args[2]);
+        ViewGroup group = manager.createGroup(lowerName, ViewMode.TWO_SIDED);
+        if (group == null) {
+            messages.send(sender, "group-exists", "group", lowerName);
+            return;
+        }
+        messages.send(sender, "group-created", "group", lowerName);
     }
 
     /**
@@ -258,7 +264,7 @@ public class AppearanceCommand implements CommandExecutor {
         }
         undoManager.push(player, List.of(before));
         for (Player p : Bukkit.getOnlinePlayers()) {
-            viewService.update(p);
+            viewService.update(p, false);
         }
     }
 
@@ -288,7 +294,9 @@ public class AppearanceCommand implements CommandExecutor {
     /**
      * Handles /dba set &lt;group&gt; &lt;block&gt; [side].
      * Sets the fake block for every non-air block in the selection.
-     * Without a side, the side facing the player is used.
+     * Without a side, the side facing the player is used. If the selection
+     * is one block high or the player looks steeply up or down, a hint
+     * suggests adding up or down.
      *
      * @param sender who used the command
      * @param args   the arguments of the command
@@ -327,6 +335,7 @@ public class AppearanceCommand implements CommandExecutor {
         }
 
         BlockFace face;
+        boolean sideGiven = args.length >= 4;
         if (args.length >= 4) {
             try {
                 face = BlockFace.valueOf(args[3].toUpperCase());
@@ -368,9 +377,16 @@ public class AppearanceCommand implements CommandExecutor {
             undoManager.push(player, change);
         }
         for (Player p : Bukkit.getOnlinePlayers()) {
-            viewService.update(p);
+            viewService.update(p, false);
         }
         messages.send(player, "set-result", "side", face.name(), "block", mat.name(), "added", String.valueOf(added), "updated", String.valueOf(updated), "skipped", String.valueOf(skipped));
+        if(!sideGiven){
+            int height = Math.abs(sel.getPos1().getY() - sel.getPos2().getY()) + 1;
+            float pitch = player.getLocation().getPitch();
+            if(height == 1 || pitch > 45 || pitch < -45){
+                messages.send(player, "set-hint");
+            }
+        }
     }
 
     /**
@@ -494,7 +510,7 @@ public class AppearanceCommand implements CommandExecutor {
             return;
         }
         for (Player p : Bukkit.getOnlinePlayers()) {
-            viewService.update(p);
+            viewService.update(p, false);
         }
         messages.send(player, "undo-result", "changes", String.valueOf(undone), "blocks", String.valueOf(blocks));
     }

@@ -44,6 +44,7 @@ messages: # &-color codes allowed, %placeholders% are filled in by the plugin
   group-deleted: "&aGroup %group% deleted (%blocks% blocks)"
   group-list-empty: "&7No groups"
   group-list-entry: "&f%group% &7(%mode%, %blocks% blocks)"
+  invalid-group-name: "&cGroup names may only contain letters, numbers, _ and -."
 
   look-at-block: "&cLook at a block (max. %range% blocks away)"
   pos-set: "&a%pos% set &7(%x%, %y%, %z%)"
@@ -66,3 +67,4 @@ messages: # &-color codes allowed, %placeholders% are filled in by the plugin
 
   block-protected: "&cThis block is protected"
   block-removed: "&aDBA block removed"
+  set-hint: "&7Tip: Add a side for floors and ceilings, e.g. &f/dba set <group> <block> up &7or &fdown"
