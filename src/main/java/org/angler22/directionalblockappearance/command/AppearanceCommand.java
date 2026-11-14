@@ -264,7 +264,7 @@ public class AppearanceCommand implements CommandExecutor {
         }
         undoManager.push(player, List.of(before));
         for (Player p : Bukkit.getOnlinePlayers()) {
-            viewService.update(p);
+            viewService.update(p, false);
         }
     }
 
@@ -377,7 +377,7 @@ public class AppearanceCommand implements CommandExecutor {
             undoManager.push(player, change);
         }
         for (Player p : Bukkit.getOnlinePlayers()) {
-            viewService.update(p);
+            viewService.update(p, false);
         }
         messages.send(player, "set-result", "side", face.name(), "block", mat.name(), "added", String.valueOf(added), "updated", String.valueOf(updated), "skipped", String.valueOf(skipped));
         if(!sideGiven){
@@ -510,7 +510,7 @@ public class AppearanceCommand implements CommandExecutor {
             return;
         }
         for (Player p : Bukkit.getOnlinePlayers()) {
-            viewService.update(p);
+            viewService.update(p, false);
         }
         messages.send(player, "undo-result", "changes", String.valueOf(undone), "blocks", String.valueOf(blocks));
     }

@@ -130,11 +130,11 @@ public class AppearanceManager {
                 if (!vb.getKey().getWorld().equals(worldId)) {
                     continue;
                 }
-                Location center = vb.getKey().toCenter();
-                if (center == null) {
-                    continue;
-                }
-                if (center.distanceSquared(loc) <= rSquared) {
+                BlockKey key = vb.getKey();
+                double dx = key.getX() + 0.5 - loc.getX();
+                double dy = key.getY() + 0.5 - loc.getY();
+                double dz = key.getZ() + 0.5 - loc.getZ();
+                if (dx * dx + dy * dy + dz * dz <= rSquared) {
                     list.add(vb);
                 }
             }

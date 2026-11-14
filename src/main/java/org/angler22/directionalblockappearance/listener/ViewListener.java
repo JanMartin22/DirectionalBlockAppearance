@@ -57,7 +57,7 @@ public class ViewListener implements Listener {
         if(to.getBlockX() == from.getBlockX() && toEyeY == fromEyeY && to.getBlockZ() == from.getBlockZ()){
             return;
         }
-        viewService.update(e.getPlayer());
+        viewService.update(e.getPlayer(), false);
     }
 
     /**
@@ -69,7 +69,7 @@ public class ViewListener implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent e){
         Player player = e.getPlayer();
-        Bukkit.getScheduler().runTask(plugin, () -> viewService.update(player));
+        Bukkit.getScheduler().runTask(plugin, () -> viewService.update(player, false));
     }
 
     /**
@@ -105,13 +105,16 @@ public class ViewListener implements Listener {
     }
 
     /**
-     * Resends all nearby fake blocks after a world change.
+     * Clears what was sent to the player and resends all nearby fake blocks
+     * after a world change. The client drops the old world completely,
+     * so nothing from there needs to be restored.
      *
      * @param event the world change event
      */
     @EventHandler
     public void onWorldChange(PlayerChangedWorldEvent event) {
         Player player = event.getPlayer();
+        viewService.clear(player);
         Bukkit.getScheduler().runTaskLater(plugin, () -> viewService.resync(player), teleportDelay);
     }
 }
