@@ -422,7 +422,7 @@ public class ProtectionListener implements Listener {
     /**
      * Prevents the fluid level of DBA blocks from changing (protection.liquids).
      *
-     * @param event the fluid level change event
+     * @param e the fluid level change event
      */
     @EventHandler(ignoreCancelled = true)
     public void onFluidChange(FluidLevelChangeEvent e) {
